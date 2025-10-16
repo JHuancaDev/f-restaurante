@@ -1,0 +1,49 @@
+<div class="login-container">
+  <div class="card p-4">
+    <div class="image">
+      <img
+        src="https://images.unsplash.com/photo-1602934445884-da0fa1c9d3b3"
+        alt="Logo">
+    </div>
+
+    <h2 class="text-center">Bienvenido</h2>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <div class="p-field">
+        <label for="username">Usuario</label>
+        <input id="username" type="text" pInputText [(ngModel)]="username" name="username" required />
+      </div>
+
+      <div class="p-field">
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" pInputText [(ngModel)]="password" name="password" required />
+      </div>
+
+      <div class="p-field p-d-flex p-jc-between">
+        <button pButton type="submit" label="Iniciar sesión" [disabled]="!loginForm.valid"></button>
+        <a href="#" (click)="onForgotPassword()">¿Olvidaste tu contraseña?</a>
+      </div>
+      
+      <div class="p-field p-d-flex p-jc-between">
+        <button pButton type="submit" label="fast" [disabled]="!loginForm.valid"></button>
+        <a routerLink="/sidebar">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <div class="p-d-flex p-jc-center">
+        <a href="#">¿No tienes cuenta? Regístrate</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<p-dialog header="Recuperar Contraseña" [(visible)]="displayRecoverDialog" [modal]="true" [closable]="false">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="recoverEmail">Ingresa tu correo</label>
+      <input id="recoverEmail" type="email" pInputText [(ngModel)]="recoverEmail" required />
+    </div>
+    <div class="p-d-flex p-jc-end">
+      <button pButton label="Enviar" (click)="onRecoverPassword()" [disabled]="!recoverEmail"></button>
+    </div>
+  </div>
+</p-dialog>

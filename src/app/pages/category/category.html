@@ -1,0 +1,159 @@
+<!-- src/app/components/category-list/category-list.component.html -->
+<div class="category-list-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Toolbar -->
+  <p-toolbar styleClass="mb-4">
+    <ng-template pTemplate="start">
+      <h2 class="m-0">
+        <i class="pi pi-tags mr-2"></i>
+        Gestión de Categorías
+      </h2>
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <p-button icon="pi pi-plus" label="Nueva Categoría" (onClick)="openNewDialog()" styleClass="p-button-success">
+      </p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Search Bar -->
+  <p-card styleClass="mb-4">
+    <div class="search-container">
+      <span class="p-input-icon-left flex-1">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" [(ngModel)]="searchTerm" (keyup.enter)="searchCategories()"
+          placeholder="Buscar categorías por nombre..." class="w-full">
+      </span>
+
+      <p-button icon="pi pi-search" label="Buscar" (onClick)="searchCategories()" styleClass="ml-2">
+      </p-button>
+
+      <p-button icon="pi pi-times" label="Limpiar" (onClick)="clearSearch()" *ngIf="searchTerm"
+        styleClass="p-button-secondary ml-2">
+      </p-button>
+    </div>
+  </p-card>
+
+  <!-- Categories Table -->
+  <p-card>
+    <p-table [value]="categories" [loading]="loading" [paginator]="true" [rows]="rows" [first]="first"
+      [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} categorías"
+      [rowsPerPageOptions]="[10, 25, 50]" responsiveLayout="scroll" styleClass="p-datatable-gridlines">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 80px">ID</th>
+          <th style="width: 120px">Imagen</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th style="width: 120px">Productos</th>
+          <th style="width: 180px">Fecha Creación</th>
+          <th style="width: 150px">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-category>
+        <tr>
+          <td>{{ category.id }}</td>
+
+          <td>
+            <p-image [src]="category.url_image" alt="{{category.name}}" width="80" height="80" [preview]="true">
+            </p-image>
+          </td>
+
+          <td>
+            <strong>{{ category.name }}</strong>
+          </td>
+
+          <td>
+            <div class="description-cell">
+              {{ category.description }}
+            </div>
+          </td>
+
+          <td class="text-center">
+            <p-tag [value]="category.product_count?.toString() || '0'" severity="info">
+            </p-tag>
+          </td>
+
+          <td>
+            {{ category.created_at | date:'dd/MM/yyyy HH:mm' }}
+          </td>
+
+          <td>
+            <div class="action-buttons">
+              <p-button icon="pi pi-pencil" styleClass="p-button-rounded p-button-warning p-button-sm mr-2"
+                (onClick)="openEditDialog(category)" pTooltip="Editar" tooltipPosition="top">
+              </p-button>
+
+              <p-button icon="pi pi-trash" styleClass="p-button-rounded p-button-danger p-button-sm"
+                (onClick)="deleteCategory(category)" pTooltip="Eliminar" tooltipPosition="top">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <p>No se encontraron categorías</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Dialog for Create/Edit -->
+  <p-dialog [(visible)]="displayDialog" [header]="dialogTitle" [modal]="true" [style]="{width: '600px'}"
+    [draggable]="false" [resizable]="false">
+
+    <div class="dialog-content">
+      <!-- Name -->
+      <div class="field">
+        <label for="name" class="required">Nombre</label>
+        <input pInputText id="name" [(ngModel)]="categoryForm.name" placeholder="Ej: Bebidas, Comida, Postres"
+          class="w-full">
+      </div>
+
+      <!-- Description -->
+      <div class="field">
+        <label for="description" class="required">Descripción</label>
+        <textarea pInputTextarea id="description" [(ngModel)]="categoryForm.description"
+          placeholder="Describe la categoría..." rows="4" class="w-full">
+        </textarea>
+      </div>
+
+      <!-- Image URL -->
+      <div class="field">
+        <label for="url_image" class="required">URL de Imagen</label>
+        <input pInputText id="url_image" [(ngModel)]="categoryForm.url_image"
+          placeholder="https://ejemplo.com/imagen.jpg" class="w-full">
+
+        <small class="text-muted">Ingresa la URL completa de la imagen</small>
+      </div>
+
+      <!-- Image Preview -->
+      <div class="field" *ngIf="categoryForm.url_image">
+        <label>Vista Previa</label>
+        <div class="image-preview">
+          <img [src]="categoryForm.url_image" alt="Preview"
+            (error)="$event.target.src='https://via.placeholder.com/150?text=Error+al+cargar'" class="preview-img">
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button label="Cancelar" icon="pi pi-times" (onClick)="hideDialog()" styleClass="p-button-text">
+      </p-button>
+
+      <p-button [label]="isEditMode ? 'Actualizar' : 'Crear'" icon="pi pi-check" (onClick)="saveCategory()"
+        [loading]="loading"></p-button>
+    </ng-template>
+  </p-dialog>
+</div>
