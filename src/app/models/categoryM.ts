@@ -1,3 +1,5 @@
+import { ProductM } from "./product-m";
+
 export interface CategoryM {
   id?: number;
   name: string;
@@ -31,13 +33,4 @@ export interface ApiError {
     msg: string;
     type: string;
   }>;
-}
-export interface ProductM {
-  id: number;
-  name: string;
-  description?: string;
-  price: number;
-  category_id: number;
-  url_image?: string;
-  created_at?: string;
 }

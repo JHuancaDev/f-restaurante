@@ -1,0 +1,252 @@
+<!-- src/app/components/product-list/product-list.component.html -->
+<div class="product-list-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Toolbar -->
+  <p-toolbar styleClass="mb-4">
+    <ng-template pTemplate="start">
+      <h2 class="m-0">
+        <i class="pi pi-shopping-bag mr-2"></i>
+        Gestión de Productos
+      </h2>
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <p-button icon="pi pi-plus" label="Nuevo Producto" (onClick)="openNewDialog()" styleClass="p-button-success">
+      </p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Filters -->
+  <div class="filters-card mb-4">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Categoría</label>
+        <p-autocomplete [(ngModel)]="selectedCategoryFilter" (options)="categories" placeholder="Todas las categorías"
+          [showClear]="true" styleClass="w-full">
+        </p-autocomplete>
+      </div>
+
+      <div class="filter-item">
+        <label>Solo Disponibles</label>
+        <p-inputSwitch [(ngModel)]="availableOnlyFilter">
+        </p-inputSwitch>
+      </div>
+
+      <div class="filter-actions">
+        <p-button icon="pi pi-filter" label="Aplicar" (onClick)="applyFilters()" styleClass="p-button-primary">
+        </p-button>
+
+        <p-button icon="pi pi-filter-slash" label="Limpiar" (onClick)="clearFilters()"
+          styleClass="p-button-secondary ml-2">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="rows" [first]="first"
+    [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
+    [rowsPerPageOptions]="[10, 25, 50]" responsiveLayout="scroll" styleClass="p-datatable-gridlines">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 60px">ID</th>
+        <th style="width: 100px">Imagen</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th style="width: 120px">Precio</th>
+        <th style="width: 140px">Categoría</th>
+        <th style="width: 100px">Stock</th>
+        <th style="width: 120px">Disponible</th>
+        <th style="width: 200px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-product>
+      <tr>
+        <td>{{ product.id }}</td>
+
+        <td>
+          <p-image [src]="product.image_url" alt="{{product.name}}" width="70" height="70" [preview]="true"
+            [imageStyle]="{'object-fit': 'cover', 'border-radius': '8px'}">
+          </p-image>
+        </td>
+
+        <td>
+          <strong>{{ product.name }}</strong>
+        </td>
+
+        <td>
+          <div class="description-cell">
+            {{ product.description }}
+          </div>
+        </td>
+
+        <td>
+          <span class="price-badge">
+            S/ {{ product.price | number:'1.2-2' }}
+          </span>
+        </td>
+
+        <td>
+          <p-tag [value]="getCategoryName(product.category_id)" severity="info">
+          </p-tag>
+        </td>
+
+        <td class="text-center">
+          <p-tag [value]="product.stock.toString()" (severity)="getStockSeverity(product.stock)">
+          </p-tag>
+        </td>
+
+        <td class="text-center">
+          <p-inputSwitch [(ngModel)]="product.is_available" (onChange)="toggleAvailability(product)">
+          </p-inputSwitch>
+        </td>
+
+        <td>
+          <div class="action-buttons">
+            <p-button icon="pi pi-box" styleClass="p-button-rounded p-button-info p-button-sm"
+              (onClick)="openStockDialog(product)" pTooltip="Gestionar Stock" tooltipPosition="top">
+            </p-button>
+
+            <p-button icon="pi pi-pencil" styleClass="p-button-rounded p-button-warning p-button-sm"
+              (onClick)="openEditDialog(product)" pTooltip="Editar" tooltipPosition="top">
+            </p-button>
+
+            <p-button icon="pi pi-trash" styleClass="p-button-rounded p-button-danger p-button-sm"
+              (onClick)="deleteProduct(product)" pTooltip="Eliminar" tooltipPosition="top">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" class="text-center">
+          <div class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <p>No se encontraron productos</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Dialog for Create/Edit Product -->
+  <p-dialog [(visible)]="displayDialog" [header]="dialogTitle" [modal]="true" [style]="{width: '700px'}"
+    [draggable]="false" [resizable]="false">
+
+    <div class="dialog-content">
+      <div class="form-grid">
+        <!-- Name -->
+        <div class="field col-12">
+          <label for="name" class="required">Nombre del Producto</label>
+          <input pInputText id="name" [(ngModel)]="productForm.name" placeholder="Ej: Hamburguesa Clásica"
+            class="w-full">
+        </div>
+
+        <!-- Description -->
+        <div class="field col-12">
+          <label for="description" class="required">Descripción</label>
+          <textarea pInputTextarea id="description" [(ngModel)]="productForm.description"
+            placeholder="Describe el producto..." rows="3" class="w-full">
+          </textarea>
+        </div>
+
+        <!-- Price -->
+        <div class="field col-6">
+          <label for="price" class="required">Precio (S/)</label>
+          <p-inputNumber [(ngModel)]="productForm.price" mode="currency" currency="PEN" locale="es-PE" [min]="0"
+            [minFractionDigits]="2" inputId="price" styleClass="w-full">
+          </p-inputNumber>
+        </div>
+
+        <!-- Stock -->
+        <div class="field col-6">
+          <label for="stock" class="required">Stock Inicial</label>
+          <p-inputNumber [(ngModel)]="productForm.stock" [min]="0" [showButtons]="true" inputId="stock"
+            styleClass="w-full">
+          </p-inputNumber>
+        </div>
+
+        <!-- Category -->
+        <div class="field col-12">
+          <label for="category" class="required">Categoría</label>
+          <p-autocomplete [(ngModel)]="productForm.category_id" (options)="categories"
+            placeholder="Seleccione una categoría" inputId="category" styleClass="w-full">
+          </p-autocomplete>
+        </div>
+
+        <!-- Image URL -->
+        <div class="field col-12">
+          <label for="image_url" class="required">URL de Imagen</label>
+          <input pInputText id="image_url" [(ngModel)]="productForm.image_url"
+            placeholder="https://ejemplo.com/imagen.jpg" class="w-full">
+          <small class="text-muted">Ingresa la URL completa de la imagen del producto</small>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="field col-12" *ngIf="productForm.image_url">
+          <label>Vista Previa</label>
+          <div class="image-preview">
+            <img [src]="productForm.image_url" alt="Preview"
+              (error)="$event.target.src='https://via.placeholder.com/200?text=Error'" class="preview-img">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button label="Cancelar" icon="pi pi-times" (onClick)="hideDialog()" styleClass="p-button-text">
+      </p-button>
+
+      <p-button [label]="isEditMode ? 'Actualizar' : 'Crear'" icon="pi pi-check" (onClick)="saveProduct()"
+        [loading]="loading">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Dialog for Stock Management -->
+  <p-dialog [(visible)]="displayStockDialog" header="Gestionar Stock" [modal]="true" [style]="{width: '450px'}"
+    [draggable]="false" [resizable]="false">
+
+    <div class="dialog-content" *ngIf="selectedProduct">
+      <div class="stock-info">
+        <h3>{{ selectedProduct.name }}</h3>
+        <p class="current-stock">
+          Stock actual:
+          <strong>{{ selectedProduct.stock }} unidades</strong>
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="stockChange">Ajuste de Stock</label>
+        <p-inputNumber [(ngModel)]="stockChange" [showButtons]="true" buttonLayout="horizontal" inputId="stockChange"
+          placeholder="Ingrese cantidad (+ o -)" [step]="1" styleClass="w-full">
+        </p-inputNumber>
+        <small class="text-muted">
+          Use números positivos para agregar, negativos para reducir
+        </small>
+      </div>
+
+      <div class="stock-preview" *ngIf="stockChange !== 0">
+        <p>Nuevo stock:
+          <strong class="new-stock">
+            {{ selectedProduct.stock + stockChange }}
+          </strong>
+        </p>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button label="Cancelar" icon="pi pi-times" (onClick)="hideStockDialog()" styleClass="p-button-text">
+      </p-button>
+
+      <p-button label="Actualizar Stock" icon="pi pi-check" (onClick)="updateStock()" [disabled]="stockChange === 0">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
 import { CategoryM, CategoryCreate, CategoryUpdate, CategoryWithCount, CategoryWithProducts } from '../models/categoryM';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
-  private readonly API_URL = 'http://192.168.101.32:8000'; // Cambia según tu configuración
+  private readonly API_URL = environment.apiUrl;
   private categoriesSubject = new BehaviorSubject<CategoryM[]>([]);
   public categories$ = this.categoriesSubject.asObservable();
 

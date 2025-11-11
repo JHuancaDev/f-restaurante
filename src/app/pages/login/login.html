@@ -11,22 +11,36 @@
     <form (ngSubmit)="onLogin()" #loginForm="ngForm">
       <div class="p-field">
         <label for="username">Usuario</label>
-        <input id="username" type="text" pInputText [(ngModel)]="username" name="username" required />
+        <input 
+          id="username" 
+          type="text" 
+          pInputText 
+          [(ngModel)]="username" 
+          name="username" 
+          required 
+          [disabled]="loading" />
       </div>
 
       <div class="p-field">
         <label for="password">Contraseña</label>
-        <input id="password" type="password" pInputText [(ngModel)]="password" name="password" required />
+        <input 
+          id="password" 
+          type="password" 
+          pInputText 
+          [(ngModel)]="password" 
+          name="password" 
+          required 
+          [disabled]="loading" />
       </div>
 
       <div class="p-field p-d-flex p-jc-between">
-        <button pButton type="submit" label="Iniciar sesión" [disabled]="!loginForm.valid"></button>
+        <button 
+          pButton 
+          type="submit" 
+          label="Iniciar sesión" 
+          [disabled]="!loginForm.valid || loading"
+          [loading]="loading"></button>
         <a href="#" (click)="onForgotPassword()">¿Olvidaste tu contraseña?</a>
-      </div>
-      
-      <div class="p-field p-d-flex p-jc-between">
-        <button pButton type="submit" label="fast" [disabled]="!loginForm.valid"></button>
-        <a routerLink="/sidebar">¿Olvidaste tu contraseña?</a>
       </div>
 
       <div class="p-d-flex p-jc-center">
@@ -40,10 +54,21 @@
   <div class="p-fluid">
     <div class="p-field">
       <label for="recoverEmail">Ingresa tu correo</label>
-      <input id="recoverEmail" type="email" pInputText [(ngModel)]="recoverEmail" required />
+      <input 
+        id="recoverEmail" 
+        type="email" 
+        pInputText 
+        [(ngModel)]="recoverEmail" 
+        required />
     </div>
     <div class="p-d-flex p-jc-end">
-      <button pButton label="Enviar" (click)="onRecoverPassword()" [disabled]="!recoverEmail"></button>
+      <button 
+        pButton 
+        label="Enviar" 
+        (click)="onRecoverPassword()" 
+        [disabled]="!recoverEmail"></button>
     </div>
   </div>
 </p-dialog>
+
+<p-toast></p-toast>

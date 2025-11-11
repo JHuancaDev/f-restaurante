@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { ToastModule } from 'primeng/toast';
 import { Menu } from 'primeng/menu';
@@ -9,8 +9,7 @@ import { MenuItem } from 'primeng/api';
 @Component({
   selector: 'app-sidebar',
   imports: [
-    Menu, ToastModule,
-    RouterOutlet
+    Menu, ToastModule
 ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss'
@@ -47,9 +46,9 @@ export class Sidebar {
             routerLink: '/category',
           },
           {
-            label: 'Logout',
+            label: 'produto lista',
             icon: 'pi pi-sign-out',
-            routerLink: '/logout'
+            routerLink: '/product-list'
           }
         ]
       }

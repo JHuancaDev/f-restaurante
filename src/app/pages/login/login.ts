@@ -5,9 +5,10 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
-import { Image } from 'primeng/image';
 import { ImageModule } from 'primeng/image';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { AuthService } from '../../service/auth-service';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +21,7 @@ import { RouterModule } from '@angular/router';
     ToastModule,
     ImageModule,
     RouterModule
-],
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
@@ -29,11 +30,56 @@ export class Login {
   password: string = '';
   recoverEmail: string = '';
   displayRecoverDialog: boolean = false;
+  loading: boolean = false;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService
+  ) { }
 
   onLogin() {
-    // Aquí iría la lógica para autenticar al usuario
-    console.log('Usuario:', this.username);
-    console.log('Contraseña:', this.password);
+    if (!this.username || !this.password) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Por favor, completa todos los campos'
+      });
+      return;
+    }
+
+    this.loading = true;
+
+    const loginData = {
+      username: this.username,
+      password: this.password
+    };
+
+    this.authService.login(loginData).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.router.navigate(['/table/table-active']);
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Error en login:', error);
+
+        let errorMessage = 'Error en el login';
+        if (error.status === 422) {
+          errorMessage = 'Credenciales inválidas';
+        } else if (error.status === 401) {
+          errorMessage = 'Usuario o contraseña incorrectos';
+        } else if (error.status === 0) {
+          errorMessage = 'Error de conexión con el servidor';
+        }
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorMessage
+        });
+      }
+    });
   }
 
   onForgotPassword() {
@@ -43,6 +89,13 @@ export class Login {
   onRecoverPassword() {
     // Aquí iría la lógica para enviar el correo de recuperación
     console.log('Correo para recuperación:', this.recoverEmail);
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Recuperación',
+      detail: 'Se ha enviado un correo de recuperación'
+    });
     this.displayRecoverDialog = false;
+    this.recoverEmail = '';
   }
+
 }

@@ -1,124 +1,47 @@
 import { Injectable } from '@angular/core';
-import { RestaurantLayout, Table } from '../models/table';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { CreateTableRequest, Table, UpdateTablePositionRequest, UpdateTableRequest } from '../models/table';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TableService {
-  private readonly STORAGE_KEY = 'restaurant_layout';
-  private tablesSubject: BehaviorSubject<Table[]>;
-  private nextTableNumber = 1;
+  private apiUrl = environment.apiUrl;
 
-  constructor() {
-    const savedLayout = this.loadLayout();
-    this.tablesSubject = new BehaviorSubject<Table[]>(savedLayout.tables);
-    this.nextTableNumber = this.calculateNextTableNumber(savedLayout.tables);
+  constructor(private http: HttpClient) { }
+
+  getTables(skip: number = 0, limit: number = 100, availableOnly: boolean = false): Observable<Table[]> {
+    let params = new HttpParams()
+      .set('skip', skip.toString())
+      .set('limit', limit.toString())
+      .set('available_only', availableOnly.toString());
+
+    return this.http.get<Table[]>(`${this.apiUrl}/`, { params });
   }
 
-  get tables$(): Observable<Table[]> {
-    return this.tablesSubject.asObservable();
+  getAvailableTables(): Observable<Table[]> {
+    return this.http.get<Table[]>(`${this.apiUrl}/available`);
   }
 
-  getTables(): Table[] {
-    return this.tablesSubject.value;
+  getTableById(tableId: number): Observable<Table> {
+    return this.http.get<Table>(`${this.apiUrl}/${tableId}`);
   }
 
-  addTable(seats: number = 4, shape: 'rectangle' | 'circle' = 'rectangle'): void {
-    const tables = this.getTables();
-    const newTable: Table = {
-      id: this.generateId(),
-      number: this.nextTableNumber++,
-      seats,
-      x: 50,
-      y: 50,
-      width: shape === 'rectangle' ? 120 : 100,
-      height: shape === 'rectangle' ? 80 : 100,
-      shape
-    };
-
-    const updatedTables = [...tables, newTable];
-    this.tablesSubject.next(updatedTables);
-    this.saveLayout(updatedTables);
+  createTable(tableData: CreateTableRequest): Observable<Table> {
+    return this.http.post<Table>(`${this.apiUrl}/`, tableData);
   }
 
-  updateTable(table: Table): void {
-    const tables = this.getTables();
-    const index = tables.findIndex(t => t.id === table.id);
-
-    if (index !== -1) {
-      tables[index] = { ...table };
-      this.tablesSubject.next([...tables]);
-      this.saveLayout(tables);
-    }
+  updateTable(tableId: number, tableData: UpdateTableRequest): Observable<Table> {
+    return this.http.put<Table>(`${this.apiUrl}/${tableId}`, tableData);
   }
 
-  deleteTable(tableId: string): void {
-    const tables = this.getTables().filter(t => t.id !== tableId);
-    this.tablesSubject.next(tables);
-    this.saveLayout(tables);
+  deleteTable(tableId: number): Observable<string> {
+    return this.http.delete<string>(`${this.apiUrl}/${tableId}`);
   }
 
-  updateTablePosition(tableId: string, x: number, y: number): void {
-    const tables = this.getTables();
-    const table = tables.find(t => t.id === tableId);
-
-    if (table) {
-      table.x = x;
-      table.y = y;
-      this.tablesSubject.next([...tables]);
-      this.saveLayout(tables);
-    }
-  }
-
-  clearAllTables(): void {
-    this.tablesSubject.next([]);
-    this.nextTableNumber = 1;
-    this.saveLayout([]);
-  }
-
-  private generateId(): string {
-    return `table_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  private calculateNextTableNumber(tables: Table[]): number {
-    if (tables.length === 0) return 1;
-    const maxNumber = Math.max(...tables.map(t => t.number));
-    return maxNumber + 1;
-  }
-
-  private saveLayout(tables: Table[]): void {
-    const layout: RestaurantLayout = {
-      tables,
-      lastUpdated: new Date()
-    };
-
-    // En producción, aquí usarías localStorage:
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(layout));
-
-    // Para este entorno, usamos una variable en memoria
-    //if (typeof window !== 'undefined') {
-    //  (window as any).__restaurantLayout = layout;
-    //}
-  }
-
-  private loadLayout(): RestaurantLayout {
-    try {
-      // En producción, usarías:
-       const saved = localStorage.getItem(this.STORAGE_KEY);
-
-      // Para este entorno, leemos de memoria
-       //const saved = typeof window !== 'undefined'
-        // ? (window as any).__restaurantLayout
-        // : null;
-
-      if (saved) {
-        return typeof saved === 'string' ? JSON.parse(saved) : saved;
-      }
-    } catch (error) {
-      console.error('Error loading layout:', error);
-    }
-
-    return { tables: [], lastUpdated: new Date() };
+  updateTablePosition(tableId: number, positionData: UpdateTablePositionRequest): Observable<Table> {
+    return this.http.patch<Table>(`${this.apiUrl}/${tableId}/position`, positionData);
   }
 }
