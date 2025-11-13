@@ -1,0 +1,106 @@
+<div class="card">
+  <p-toast></p-toast>
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>{{ isEditMode ? 'Editar Mesa' : 'Nueva Mesa' }}</h2>
+    <button 
+      pButton 
+      icon="pi pi-arrow-left" 
+      label="Volver" 
+      class="p-button-secondary"
+      (click)="onCancel()">
+    </button>
+  </div>
+
+  <form [formGroup]="tableForm" (ngSubmit)="onSubmit()">
+    <div class="p-fluid grid">
+      <div class="field col-12 md:col-6">
+        <label for="number">Número de Mesa *</label>
+        <input 
+          pInputText 
+          id="number" 
+          formControlName="number" 
+          type="number"
+          [class]="{'ng-invalid ng-dirty': tableForm.get('number')?.invalid && tableForm.get('number')?.touched}">
+        <small *ngIf="tableForm.get('number')?.invalid && tableForm.get('number')?.touched" class="p-error">
+          El número de mesa es requerido y debe ser mayor a 0
+        </small>
+      </div>
+
+      <div class="field col-12 md:col-6">
+        <label for="capacity">Capacidad *</label>
+        <input 
+          pInputText 
+          id="capacity" 
+          formControlName="capacity" 
+          type="number"
+          [class]="{'ng-invalid ng-dirty': tableForm.get('capacity')?.invalid && tableForm.get('capacity')?.touched}">
+        <small *ngIf="tableForm.get('capacity')?.invalid && tableForm.get('capacity')?.touched" class="p-error">
+          La capacidad es requerida y debe ser mayor a 0
+        </small>
+      </div>
+
+      <div class="field col-12 md:col-6">
+        <label for="position_x">Posición X *</label>
+        <input 
+          pInputText 
+          id="position_x" 
+          formControlName="position_x" 
+          type="number"
+          [class]="{'ng-invalid ng-dirty': tableForm.get('position_x')?.invalid && tableForm.get('position_x')?.touched}">
+        <small *ngIf="tableForm.get('position_x')?.invalid && tableForm.get('position_x')?.touched" class="p-error">
+          La posición X es requerida y debe ser 0 o mayor
+        </small>
+      </div>
+
+      <div class="field col-12 md:col-6">
+        <label for="position_y">Posición Y *</label>
+        <input 
+          pInputText 
+          id="position_y" 
+          formControlName="position_y" 
+          type="number"
+          [class]="{'ng-invalid ng-dirty': tableForm.get('position_y')?.invalid && tableForm.get('position_y')?.touched}">
+        <small *ngIf="tableForm.get('position_y')?.invalid && tableForm.get('position_y')?.touched" class="p-error">
+          La posición Y es requerida y debe ser 0 o mayor
+        </small>
+      </div>
+
+      <div class="field col-12 md:col-6">
+        <p-checkbox 
+          id="is_available" 
+          formControlName="is_available" 
+          label="Mesa disponible">
+        </p-checkbox>
+      </div>
+
+      <div *ngIf="isEditMode" class="field col-12 md:col-6">
+        <p-checkbox 
+          id="is_active" 
+          formControlName="is_active" 
+          label="Mesa activa">
+        </p-checkbox>
+      </div>
+    </div>
+
+    <div class="flex gap-2 mt-4">
+      <button 
+        pButton 
+        type="submit" 
+        icon="pi pi-check" 
+        label="{{ isEditMode ? 'Actualizar' : 'Crear' }}"
+        class="p-button-success"
+        [disabled]="tableForm.invalid || loading">
+      </button>
+      
+      <button 
+        pButton 
+        type="button" 
+        icon="pi pi-times" 
+        label="Cancelar"
+        class="p-button-secondary"
+        (click)="onCancel()">
+      </button>
+    </div>
+  </form>
+</div>

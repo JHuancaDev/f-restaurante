@@ -1,0 +1,96 @@
+<div class="card">
+  <p-toast></p-toast>
+  <p-confirmpopup />
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Gestión de Mesas</h2>
+    <div class="flex gap-2">
+      <p-checkbox 
+        [(ngModel)]="showAvailableOnly" 
+        (onChange)="onAvailableOnlyChange()"
+        label="Mostrar solo mesas disponibles"
+        [binary]="true">
+      </p-checkbox>
+      <button 
+        pButton 
+        icon="pi pi-plus" 
+        label="Nueva Mesa" 
+        routerLink="/tables/new"
+        class="p-button-success">
+      </button>
+    </div>
+  </div>
+
+  <p-table 
+    [value]="tables" 
+    [loading]="loading"
+    [paginator]="true" 
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    styleClass="p-datatable-striped">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Número</th>
+        <th>Capacidad</th>
+        <th>Posición X</th>
+        <th>Posición Y</th>
+        <th>Disponible</th>
+        <th>Activa</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-table>
+      <tr>
+        <td>{{ table.number }}</td>
+        <td>{{ table.capacity }}</td>
+        <td>{{ table.position_x }}</td>
+        <td>{{ table.position_y }}</td>
+        <td>
+          <p-tag 
+            [value]="table.is_available ? 'Disponible' : 'Ocupada'" 
+            [severity]="table.is_available ? 'success' : 'danger'">
+          </p-tag>
+        </td>
+        <td>
+          <p-tag 
+            [value]="table.is_active ? 'Activa' : 'Inactiva'" 
+            [severity]="table.is_active ? 'success' : 'warn'">
+          </p-tag>
+        </td>
+        <td>
+          <div class="flex gap-1">
+            <button 
+              pButton 
+              icon="pi pi-pencil" 
+              class="p-button-rounded p-button-info p-button-sm"
+              [routerLink]="['/tables/edit', table.id]">
+            </button>
+            
+            <button 
+              pButton 
+              icon="pi pi-trash" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="deleteTable(table)">
+            </button>
+
+            <button 
+              pButton 
+              [icon]="table.is_available ? 'pi pi-times' : 'pi pi-check'" 
+              class="p-button-rounded p-button-warning p-button-sm"
+              [class]="table.is_available ? 'p-button-warning' : 'p-button-success'"
+              (click)="toggleAvailability(table)">
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center">No se encontraron mesas</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

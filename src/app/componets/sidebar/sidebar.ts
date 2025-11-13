@@ -27,7 +27,7 @@ export class Sidebar {
           {
             label: 'Mesas Activas',
             icon: 'pi pi-plus',
-            routerLink: '/table/table-active',
+            routerLink: '/tables',
             routerActive: 'active'  // Cambiar según las rutas que hayas definido
           },
           {
