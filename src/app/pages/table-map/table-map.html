@@ -1,0 +1,87 @@
+<div class="card">
+  <p-toast></p-toast>
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Plano del Restaurante</h2>
+    <div class="flex gap-2">
+      <p-button 
+        icon="pi pi-plus" 
+        styleClass="p-button-rounded p-button-outlined p-button-success"
+        (click)="zoomIn()"
+        title="Acercar">
+      </p-button>
+      
+      <p-button 
+        icon="pi pi-minus" 
+        styleClass="p-button-rounded p-button-outlined p-button-success"
+        (click)="zoomOut()"
+        title="Alejar">
+      </p-button>
+      
+      <p-button 
+        icon="pi pi-refresh" 
+        styleClass="p-button-rounded p-button-outlined p-button-help"
+        (click)="resetZoom()"
+        title="Restablecer zoom">
+      </p-button>
+      
+      <p-button 
+        icon="pi pi-refresh" 
+        label="Actualizar"
+        styleClass="p-button-outlined"
+        (click)="loadTables()"
+        [loading]="loading">
+      </p-button>
+    </div>
+  </div>
+
+  <div class="map-container">
+    <div 
+      #restaurantMap
+      class="restaurant-map"
+      [style.width.px]="mapConfig.width"
+      [style.height.px]="mapConfig.height"
+      [style.transform]="'scale(' + scale + ')'"
+      [style.transform-origin]="'top left'">
+      
+      <!-- Grid del restaurante -->
+      <div class="map-grid"></div>
+      
+      <!-- Mesas -->
+      <div 
+        *ngFor="let table of tables"
+        class="table-item"
+        [attr.data-table-id]="table.id"
+        [ngStyle]="getTableStyle(table)"
+        draggable="true"
+        (dragstart)="onTableDragStart($event, table)"
+        (dragend)="onTableDragEnd($event)">
+        
+        <div class="table-content">
+          <i [class]="getTableIcon(table)" class="table-icon"></i>
+          <span class="table-number">{{ table.number }}</span>
+          <small class="table-capacity">{{ table.capacity }} pers.</small>
+        </div>
+        
+        <div class="table-badge" [ngClass]="getTableSeverity(table)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-legend mt-4">
+    <div class="flex gap-4">
+      <div class="flex align-items-center gap-2">
+        <div class="legend-color available"></div>
+        <span>Disponible</span>
+      </div>
+      <div class="flex align-items-center gap-2">
+        <div class="legend-color occupied"></div>
+        <span>Ocupada</span>
+      </div>
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-info-circle"></i>
+        <span>Arrastra y suelta para mover las mesas</span>
+      </div>
+    </div>
+  </div>
+</div>

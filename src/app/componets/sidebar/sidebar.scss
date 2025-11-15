@@ -1,19 +1,32 @@
-/* Estilos básicos para el menú */
-img{
-  height: 10rem;
-  width: 10rem;
-  border-radius: 50%;
-}
+div {
 
-.p-menu {
-  width: 250px;
-  background-color: #f4f4f4;
-}
+  /* Estilos básicos para el menú */
+  div {
+    text-align: center;
+    margin-top: 1.5rem;
+    img {
+      height: 10rem;
+      width: 10rem;
+      border-radius: 50%;
+    }
+  }
 
-.p-menu .p-menuitem {
-  border-bottom: 1px solid #ddd;
-}
+  h2 {
+    color: #333;
+    text-align: center;
+  }
 
-.p-menu .p-menuitem-text {
-  color: #333;
+  .p-menu {
+    width: 250px;
+    background-color: #f4f4f4;
+  }
+
+  .p-menu .p-menuitem {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .p-menu .p-menuitem-text {
+    color: #333;
+  }
+
 }

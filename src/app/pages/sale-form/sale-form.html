@@ -1,0 +1,166 @@
+<div class="card">
+  <p-toast></p-toast>
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Nueva Venta</h2>
+    <button 
+      pButton 
+      icon="pi pi-arrow-left" 
+      label="Volver" 
+      class="p-button-secondary"
+      (click)="onCancel()">
+    </button>
+  </div>
+
+  <form (formGroup)="saleForm" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <div class="col-12 md:col-8">
+        <!-- Items de la Venta -->
+        <p-card header="Productos" class="mb-4">
+          <div formArrayName="items">
+            <div 
+              *ngFor="let item of items.controls; let i = index" 
+              (formGroupName)="i"
+              class="item-row p-fluid grid align-items-end mb-3 p-3 border-round border-1 surface-border">
+              
+              <div class="field col-12 md:col-5">
+                <label [for]="'product_' + i">Producto *</label>
+                <p-dropdown 
+                  [id]="'product_' + i"
+                  formControlName="product_id"
+                  (options)="products" 
+                  optionLabel="name" 
+                  optionValue="id"
+                  placeholder="Seleccionar producto"
+                  (onChange)="onProductChange(i)"
+                  [class]="{'ng-invalid ng-dirty': item.get('product_id')?.invalid && item.get('product_id')?.touched}">
+                </p-dropdown>
+                <small *ngIf="item.get('product_id')?.invalid && item.get('product_id')?.touched" class="p-error">
+                  El producto es requerido
+                </small>
+              </div>
+
+              <div class="field col-12 md:col-2">
+                <label [for]="'quantity_' + i">Cantidad *</label>
+                <input 
+                  pInputText 
+                  [id]="'quantity_' + i"
+                  formControlName="quantity" 
+                  type="number"
+                  min="1"
+                  (input)="onProductChange(i)">
+                <small *ngIf="item.get('quantity')?.invalid && item.get('quantity')?.touched" class="p-error">
+                  La cantidad debe ser mayor a 0
+                </small>
+              </div>
+
+              <div class="field col-12 md:col-3">
+                <label [for]="'price_' + i">Precio Unitario *</label>
+                <p-inputNumber 
+                  [id]="'price_' + i"
+                  formControlName="unit_price" 
+                  mode="currency" 
+                  currency="USD" 
+                  locale="en-US"
+                  [minlength]="0"
+                  (onInput)="onProductChange(i)">
+                </p-inputNumber>
+              </div>
+
+              <div class="field col-12 md:col-1">
+                <label>Subtotal</label>
+                <div class="font-bold text-green-600">
+                  ${{ calculateItemSubtotal(i) | number:'1.2-2' }}
+                </div>
+              </div>
+
+              <div class="field col-12 md:col-1">
+                <button 
+                  pButton 
+                  type="button" 
+                  icon="pi pi-times" 
+                  class="p-button-rounded p-button-danger p-button-outlined"
+                  (click)="removeItem(i)"
+                  [disabled]="items.length === 1">
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            pButton 
+            type="button" 
+            icon="pi pi-plus" 
+            label="Agregar Producto" 
+            class="p-button-outlined p-button-success w-full"
+            (click)="addItem()">
+          </button>
+        </p-card>
+      </div>
+
+      <div class="col-12 md:col-4">
+        <!-- Información de Pago -->
+        <p-card header="Información de Pago">
+          <div class="p-fluid">
+            <div class="field mb-4">
+              <label for="payment_method">Método de Pago *</label>
+              <p-dropdown 
+                id="payment_method"
+                formControlName="payment_method"
+                (options)="paymentMethods" 
+                optionLabel="label" 
+                optionValue="value">
+              </p-dropdown>
+            </div>
+
+            <div class="field mb-4">
+              <label for="notes">Notas</label>
+              <textarea 
+                pInputTextarea 
+                id="notes" 
+                formControlName="notes" 
+                rows="3"
+                placeholder="Notas adicionales...">
+              </textarea>
+            </div>
+
+            <div class="border-top-1 border-300 pt-3">
+              <div class="flex justify-content-between align-items-center mb-2">
+                <span class="font-medium">Subtotal:</span>
+                <span class="font-medium">${{ calculateTotal() | number:'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-content-between align-items-center mb-2">
+                <span class="font-medium">Impuestos:</span>
+                <span class="font-medium">$0.00</span>
+              </div>
+              <div class="flex justify-content-between align-items-center text-2xl font-bold border-top-1 border-300 pt-2">
+                <span>Total:</span>
+                <span class="text-green-600">${{ calculateTotal() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        </p-card>
+
+        <div class="flex gap-2 mt-4">
+          <button 
+            pButton 
+            type="submit" 
+            icon="pi pi-check" 
+            label="Crear Venta"
+            class="p-button-success w-6"
+            [disabled]="saleForm.invalid || loading || items.length === 0">
+          </button>
+          
+          <button 
+            pButton 
+            type="button" 
+            icon="pi pi-times" 
+            label="Cancelar"
+            class="p-button-secondary w-6"
+            (click)="onCancel()">
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

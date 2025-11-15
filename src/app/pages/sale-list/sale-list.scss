@@ -1,0 +1,20 @@
+.stat-card {
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+:host ::ng-deep {
+  .p-tabview-nav {
+    background: transparent;
+  }
+  
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #f8f9fa;
+      font-weight: 600;
+    }
+  }
+}

@@ -10,14 +10,14 @@ import { MenuItem } from 'primeng/api';
   selector: 'app-sidebar',
   imports: [
     Menu, ToastModule
-],
+  ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss'
 })
 export class Sidebar {
   items: MenuItem[] | undefined;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit() {
     this.items = [
@@ -27,18 +27,40 @@ export class Sidebar {
           {
             label: 'Mesas Activas',
             icon: 'pi pi-plus',
-            routerLink: '/tables',
-            routerActive: 'active'  // Cambiar según las rutas que hayas definido
+            routerLink: '/table/table-active',
+            routerActive: 'active'
           },
           {
             label: 'Editar Mesas',
             icon: 'pi pi-search',
-            routerLink: '/table/table-edit'
+            routerLink: '/tables-list'
+          },
+          {
+            label: 'Editar Mesas',
+            icon: 'pi pi-search',
+            routerLink: '/tables/map'
           }
+          
+
         ]
       },
       {
         label: 'Productos',
+        items: [
+          {
+            label: 'Productos',
+            icon: 'pi pi-cog',
+            routerLink: '/product-list',
+          },
+          {
+            label: 'produto lista',
+            icon: 'pi pi-sign-out',
+            routerLink: '/product-list'
+          }
+        ]
+      },
+      {
+        label: 'Categoria',
         items: [
           {
             label: 'Productos',
@@ -48,8 +70,28 @@ export class Sidebar {
           {
             label: 'produto lista',
             icon: 'pi pi-sign-out',
-            routerLink: '/product-list'
+            routerLink: '/category'
           }
+        ]
+      },
+      {
+        label: 'Ventas',
+        items: [
+          {
+            label: 'ventas',
+            icon: 'pi pi-cog',
+            routerLink: '/sales',
+          },
+        ]
+      },
+      {
+        label: 'Usuarios',
+        items: [
+          {
+            label: 'usuarios',
+            icon: 'pi pi-cog',
+            routerLink: '/users',
+          },
         ]
       }
     ];

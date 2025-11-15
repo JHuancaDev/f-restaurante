@@ -1,0 +1,124 @@
+.map-container {
+  overflow: auto;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  padding: 1rem;
+  display: inline-block;
+}
+
+.restaurant-map {
+  position: relative;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: transform 0.2s ease;
+  
+  // Grid pattern
+  background-image: 
+    linear-gradient(#e0e0e0 1px, transparent 1px),
+    linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.table-item {
+  position: absolute;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 2px solid white;
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+  &.dragging {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+.table-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  
+  .table-icon {
+    font-size: 1.2rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .table-number {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  
+  .table-capacity {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    line-height: 1;
+  }
+}
+
+.table-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  
+  &.success {
+    background-color: #4CAF50;
+  }
+  
+  &.danger {
+    background-color: #F44336;
+  }
+}
+
+.map-legend {
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    
+    &.available {
+      background-color: #4CAF50;
+    }
+    
+    &.occupied {
+      background-color: #F44336;
+    }
+  }
+}
+
+// Efectos de arrastre
+.restaurant-map.drag-over {
+  background-color: #e3f2fd;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .map-container {
+    overflow-x: auto;
+  }
+  
+  .restaurant-map {
+    min-width: 600px;
+  }
+}

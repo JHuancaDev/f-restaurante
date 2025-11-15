@@ -1,0 +1,89 @@
+<div class="card" *ngIf="table">
+  <p-toast></p-toast>
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Detalles de Mesa {{ table.number }}</h2>
+    <button 
+      pButton 
+      icon="pi pi-arrow-left" 
+      label="Volver al Mapa" 
+      class="p-button-secondary"
+      (click)="goBack()">
+    </button>
+  </div>
+
+  <div class="grid">
+    <div class="col-12 md:col-6">
+      <p-card header="Información de la Mesa">
+        <div class="grid">
+          <div class="col-6">
+            <strong>Número:</strong>
+            <p>{{ table.number }}</p>
+          </div>
+          <div class="col-6">
+            <strong>Capacidad:</strong>
+            <p>{{ table.capacity }} personas</p>
+          </div>
+          <div class="col-6">
+            <strong>Posición X:</strong>
+            <p>{{ table.position_x }}px</p>
+          </div>
+          <div class="col-6">
+            <strong>Posición Y:</strong>
+            <p>{{ table.position_y }}px</p>
+          </div>
+          <div class="col-6">
+            <strong>Estado:</strong>
+            <p-tag 
+              [value]="table.is_available ? 'Disponible' : 'Ocupada'" 
+              [severity]="table.is_available ? 'success' : 'danger'">
+            </p-tag>
+          </div>
+          <div class="col-6">
+            <strong>Activa:</strong>
+            <p-tag 
+              [value]="table.is_active ? 'Sí' : 'No' " 
+              [severity]="table.is_active ? 'success' : 'warn'">
+            </p-tag>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 md:col-6">
+      <p-card header="Ubicación en el Plano">
+        <div class="mini-map">
+          <div 
+            class="table-marker"
+            [style.left.px]="table.position_x / 8"
+            [style.top.px]="table.position_y / 8"
+            [class.available]="table.is_available"
+            [class.occupied]="!table.is_available">
+            {{ table.number }}
+          </div>
+        </div>
+        <small class="text-color-secondary">Posición actual: ({{ table.position_x }}, {{ table.position_y }})</small>
+      </p-card>
+    </div>
+  </div>
+
+  <div class="flex gap-2 mt-4">
+    <button 
+      pButton 
+      icon="pi pi-pencil" 
+      label="Editar Mesa" 
+      class="p-button-primary"
+      [routerLink]="['/tables/edit', table.id]">
+    </button>
+    
+    <button 
+      pButton 
+      icon="pi pi-map-marker" 
+      label="Mover en el Mapa" 
+      class="p-button-help"
+      [routerLink]="['/tables/map']">
+    </button>
+  </div>
+</div>
+
+<p-progressSpinner *ngIf="loading"></p-progressSpinner>

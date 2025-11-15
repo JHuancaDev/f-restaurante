@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class TableService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl + '/tables';
 
   constructor(private http: HttpClient) { }
 

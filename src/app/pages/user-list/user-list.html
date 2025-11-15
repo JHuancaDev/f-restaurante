@@ -1,0 +1,220 @@
+<div class="card">
+  <p-toast></p-toast>
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Gestión de Usuarios</h2>
+    <div class="text-500">
+      Total: {{ getStats().total }} usuarios
+    </div>
+  </div>
+
+  <!-- Estadísticas Rápidas -->
+  <div class="grid mb-4">
+    <div class="col-12 md:col-2">
+      <div class="p-3 border-round bg-blue-50 text-center">
+        <div class="text-900 font-bold text-xl">{{ getStats().total }}</div>
+        <div class="text-600 text-sm">Total</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-2">
+      <div class="p-3 border-round bg-green-50 text-center">
+        <div class="text-900 font-bold text-xl">{{ getStats().active }}</div>
+        <div class="text-600 text-sm">Activos</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-2">
+      <div class="p-3 border-round bg-red-50 text-center">
+        <div class="text-900 font-bold text-xl">{{ getStats().admins }}</div>
+        <div class="text-600 text-sm">Administradores</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-3">
+      <div class="p-3 border-round bg-cyan-50 text-center">
+        <div class="text-900 font-bold text-xl">{{ getStats().waiters }}</div>
+        <div class="text-600 text-sm">Meseros</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-3">
+      <div class="p-3 border-round bg-teal-50 text-center">
+        <div class="text-900 font-bold text-xl">{{ getStats().customers }}</div>
+        <div class="text-600 text-sm">Clientes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <p-card header="Filtros" class="mb-4">
+    <div class="grid p-fluid">
+      <div class="field col-12 md:col-4">
+        <label for="search">Buscar</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input 
+            pInputText 
+            id="search" 
+            [(ngModel)]="searchTerm" 
+            (input)="onFilter()"
+            placeholder="Buscar por email, nombre o rol..."
+            class="w-full">
+        </span>
+      </div>
+
+      <div class="field col-12 md:col-4">
+        <label for="role">Rol</label>
+        <p-dropdown 
+          id="role"
+          [(ngModel)]="roleFilter" 
+          (options)="roles" 
+          optionLabel="label" 
+          optionValue="value"
+          (onChange)="onFilter()"
+          placeholder="Filtrar por rol">
+        </p-dropdown>
+      </div>
+
+      <div class="field col-12 md:col-4">
+        <label for="status">Estado</label>
+        <p-dropdown 
+          id="status"
+          [(ngModel)]="statusFilter" 
+          (options)="statusOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          (onChange)="onFilter()"
+          placeholder="Filtrar por estado">
+        </p-dropdown>
+      </div>
+
+      <div class="col-12 flex justify-content-end">
+        <button 
+          pButton 
+          type="button" 
+          icon="pi pi-filter-slash" 
+          label="Limpiar Filtros" 
+          class="p-button-outlined p-button-secondary"
+          (click)="clearFilters()">
+        </button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Tabla de Usuarios -->
+  <p-table 
+    [value]="filteredUsers" 
+    [loading]="loading"
+    [paginator]="true" 
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [totalRecords]="totalRecords"
+    styleClass="p-datatable-striped p-datatable-gridlines">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id" style="width: 80px">
+          ID <p-sortIcon field="id"></p-sortIcon>
+        </th>
+        <th pSortableColumn="email">
+          Email <p-sortIcon field="email"></p-sortIcon>
+        </th>
+        <th pSortableColumn="full_name">
+          Nombre Completo <p-sortIcon field="full_name"></p-sortIcon>
+        </th>
+        <th pSortableColumn="role" style="width: 150px">
+          Rol <p-sortIcon field="role"></p-sortIcon>
+        </th>
+        <th pSortableColumn="is_active" style="width: 120px">
+          Estado <p-sortIcon field="is_active"></p-sortIcon>
+        </th>
+        <th pSortableColumn="created_at" style="width: 150px">
+          Fecha Registro <p-sortIcon field="created_at"></p-sortIcon>
+        </th>
+        <th style="width: 100px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td class="font-bold text-900">#{{ user.id }}</td>
+        <td>
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-envelope text-500"></i>
+            <span>{{ user.email }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-user text-500"></i>
+            <span>{{ user.full_name || 'Sin nombre' }}</span>
+          </div>
+        </td>
+        <td>
+          <p-tag 
+            [value]="getRoleLabel(user.role)" 
+            (severity)="getRoleSeverity(user.role)"
+            styleClass="w-full text-center">
+          </p-tag>
+        </td>
+        <td>
+          <p-tag 
+            [value]="getStatusLabel(user.is_active)" 
+            (severity)="getStatusSeverity(user.is_active)"
+            styleClass="w-full text-center">
+          </p-tag>
+        </td>
+        <td>
+          <span class="text-500">{{ formatDate(user.created_at) }}</span>
+        </td>
+        <td>
+          <div class="flex gap-1 justify-content-center">
+            <button 
+              pButton 
+              icon="pi pi-eye" 
+              class="p-button-rounded p-button-info p-button-sm"
+              pTooltip="Ver detalles"
+              tooltipPosition="top">
+            </button>
+            
+            <button 
+              pButton 
+              icon="pi pi-cog" 
+              class="p-button-rounded p-button-warning p-button-sm"
+              pTooltip="Gestionar usuario"
+              tooltipPosition="top"
+              [disabled]="true">
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center p-4">
+          <div class="flex flex-column align-items-center justify-content-center gap-3">
+            <i class="pi pi-users text-400 text-6xl"></i>
+            <span class="text-500 text-lg">No se encontraron usuarios</span>
+            <button 
+              pButton 
+              icon="pi pi-refresh" 
+              label="Recargar" 
+              class="p-button-outlined"
+              (click)="loadUsers()">
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="summary">
+      <div class="flex align-items-center justify-content-between">
+        <span>Mostrando {{ filteredUsers.length }} de {{ totalRecords }} usuarios</span>
+        <button 
+          pButton 
+          icon="pi pi-refresh" 
+          class="p-button-text p-button-sm"
+          (click)="loadUsers()">
+        </button>
+      </div>
+    </ng-template>
+  </p-table>
+</div>

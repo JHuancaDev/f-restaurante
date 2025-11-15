@@ -2,9 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -20,8 +18,6 @@ import { ToastModule } from 'primeng/toast';
   selector: 'app-root',
   imports: [
     RouterOutlet,
-    BrowserModule,
-    BrowserAnimationsModule,
     HttpClientModule,
     ReactiveFormsModule,
 
@@ -33,7 +29,7 @@ import { ToastModule } from 'primeng/toast';
     ToastModule,
     ConfirmDialogModule,
     TagModule,
-    CommonModule
+    CommonModule,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

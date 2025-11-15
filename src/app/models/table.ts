@@ -31,3 +31,8 @@ export interface UpdateTablePositionRequest {
   position_x: number;
   position_y: number;
 }
+
+export interface TablePosition {
+  x: number;
+  y: number;
+}
