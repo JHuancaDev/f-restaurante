@@ -43,35 +43,187 @@ export class ProductService {
   }
 
   /**
-   * Crear un nuevo producto
-   */
+  * Crear un nuevo producto sin imagen (usando URL)
+  */
   createProduct(product: ProductCreate): Observable<ProductM> {
-    return this.http.post<ProductM>(`${this.API_URL}/products/`, product)
+    const formData = new FormData();
+
+    formData.append('name', product.name);
+    formData.append('description', product.description || '');
+    formData.append('price', product.price.toString());
+    formData.append('category_id', product.category_id.toString());
+    formData.append('stock', product.stock.toString());
+
+    if (product.image_url) {
+      formData.append('image_url', product.image_url);
+    }
+
+    return this.http.post<ProductM>(`${this.API_URL}/products/`, formData)
       .pipe(
         tap(() => this.refreshProducts()),
-        catchError(this.handleError),
+        catchError(this.handleError)
       );
-      
+  }
+
+   searchProducts(params: {
+    q: string;
+    category_id?: number;
+    available_only?: boolean;
+    skip?: number;
+    limit?: number;
+  }): Observable<ProductM[]> {
+    let httpParams = new HttpParams()
+      .set('q', params.q)
+      .set('skip', (params.skip || 0).toString())
+      .set('limit', (params.limit || 100).toString())
+      .set('available_only', (params.available_only !== false).toString());
+
+    if (params.category_id) {
+      httpParams = httpParams.set('category_id', params.category_id.toString());
+    }
+
+    return this.http.get<ProductM[]>(`${this.API_URL}/products/search`, { 
+      params: httpParams 
+    })
+    .pipe(
+      tap(products => this.productsSubject.next(products)),
+      catchError(this.handleError)
+    );
+  }
+
+
+  /**
+ * Actualizar un producto existente CON IMAGEN
+ */
+  updateProductWithImage(
+    productId: number,
+    productData: ProductUpdate,
+    imageFile?: File
+  ): Observable<ProductM> {
+    const formData = new FormData();
+
+    // Agregar campos del producto
+    if (productData.name !== undefined) {
+      formData.append('name', productData.name);
+    }
+    if (productData.description !== undefined) {
+      formData.append('description', productData.description);
+    }
+    if (productData.price !== undefined) {
+      formData.append('price', productData.price.toString());
+    }
+    if (productData.category_id !== undefined) {
+      formData.append('category_id', productData.category_id.toString());
+    }
+    if (productData.stock !== undefined) {
+      formData.append('stock', productData.stock.toString());
+    }
+    if (productData.is_available !== undefined) {
+      formData.append('is_available', productData.is_available.toString());
+    }
+
+    // Agregar archivo de imagen si existe
+    if (imageFile) {
+      formData.append('image', imageFile, imageFile.name);
+    }
+
+    return this.http.put<ProductM>(`${this.API_URL}/products/${productId}`, formData)
+      .pipe(
+        tap(() => this.refreshProducts()),
+        catchError(this.handleError)
+      );
+  }
+
+
+  /**
+ * Actualizar solo la imagen del producto
+ */
+  updateProductImage(productId: number, imageFile: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', imageFile, imageFile.name);
+
+    return this.http.patch<any>(`${this.API_URL}/products/${productId}/image`, formData)
+      .pipe(
+        tap(() => this.refreshProducts()),
+        catchError(this.handleError)
+      );
   }
 
   /**
-   * Actualizar un producto existente
+   * Crear un nuevo producto CON IMAGEN
+   */
+  createProductWithImage(productData: ProductCreate, imageFile?: File): Observable<ProductM> {
+    const formData = new FormData();
+
+    // Agregar campos del producto
+    formData.append('name', productData.name);
+    formData.append('description', productData.description || '');
+    formData.append('price', productData.price.toString());
+    formData.append('category_id', productData.category_id.toString());
+    formData.append('stock', productData.stock.toString());
+
+    // Agregar archivo de imagen si existe
+    if (imageFile) {
+      formData.append('image', imageFile, imageFile.name);
+    }
+
+    return this.http.post<ProductM>(`${this.API_URL}/products/`, formData)
+      .pipe(
+        tap(() => this.refreshProducts()),
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Actualizar un producto existente (método anterior para compatibilidad)
    */
   updateProduct(productId: number, product: ProductUpdate): Observable<ProductM> {
-    return this.http.put<ProductM>(
-      `${this.API_URL}/products/${productId}`,
-      product
-    ).pipe(
-      tap(() => this.refreshProducts()),
-      catchError(this.handleError)
-    );
+    // Si el producto tiene image_url, usar FormData
+    if (product.image_url) {
+      const formData = new FormData();
+
+      if (product.name !== undefined) {
+        formData.append('name', product.name);
+      }
+      if (product.description !== undefined) {
+        formData.append('description', product.description);
+      }
+      if (product.price !== undefined) {
+        formData.append('price', product.price.toString());
+      }
+      if (product.category_id !== undefined) {
+        formData.append('category_id', product.category_id.toString());
+      }
+      if (product.stock !== undefined) {
+        formData.append('stock', product.stock.toString());
+      }
+      if (product.is_available !== undefined) {
+        formData.append('is_available', product.is_available.toString());
+      }
+      if (product.image_url !== undefined) {
+        formData.append('image_url', product.image_url);
+      }
+
+      return this.http.put<ProductM>(`${this.API_URL}/products/${productId}`, formData)
+        .pipe(
+          tap(() => this.refreshProducts()),
+          catchError(this.handleError)
+        );
+    }
+
+    // Si no hay imagen, usar JSON normal
+    return this.http.put<ProductM>(`${this.API_URL}/products/${productId}`, product)
+      .pipe(
+        tap(() => this.refreshProducts()),
+        catchError(this.handleError)
+      );
   }
 
   /**
    * Eliminar un producto
    */
-  deleteProduct(productId: number): Observable<string> {
-    return this.http.delete<string>(`${this.API_URL}/products/${productId}`)
+  deleteProduct(productId: number): Observable<any> {
+    return this.http.delete<any>(`${this.API_URL}/products/${productId}`)
       .pipe(
         tap(() => this.refreshProducts()),
         catchError(this.handleError)
@@ -81,10 +233,13 @@ export class ProductService {
   /**
    * Actualizar stock de un producto
    */
-  updateStock(productId: number, stockChange: number): Observable<string> {
+  /**
+    * Actualizar stock de un producto
+    */
+  updateStock(productId: number, stockChange: number): Observable<any> {
     const params = new HttpParams().set('stock_change', stockChange.toString());
 
-    return this.http.patch<string>(
+    return this.http.patch<any>(
       `${this.API_URL}/products/${productId}/stock`,
       null,
       { params }
@@ -92,20 +247,6 @@ export class ProductService {
       tap(() => this.refreshProducts()),
       catchError(this.handleError)
     );
-  }
-
-  /**
-   * Filtrar productos por categoría
-   */
-  getProductsByCategory(categoryId: number): Observable<ProductM[]> {
-    return this.getProducts({ category_id: categoryId });
-  }
-
-  /**
-   * Filtrar solo productos disponibles
-   */
-  getAvailableProducts(): Observable<ProductM[]> {
-    return this.getProducts({ available_only: true });
   }
 
   /**
@@ -136,5 +277,22 @@ export class ProductService {
     console.error('Error en ProductService:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+
+  /**
+   * Filtrar productos por categoría
+   */
+  getProductsByCategory(categoryId: number): Observable<ProductM[]> {
+    return this.getProducts({ category_id: categoryId });
+  }
+
+  /**
+   * Filtrar solo productos disponibles
+   */
+  getAvailableProducts(): Observable<ProductM[]> {
+    return this.getProducts({ available_only: true });
+  }
+
+
 
 }

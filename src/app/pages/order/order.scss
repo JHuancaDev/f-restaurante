@@ -1,0 +1,34 @@
+.order-row {
+  transition: all 0.3s ease;
+  
+  &.new-order-highlight {
+    background-color: #e8f5e8 !important;
+    border-left: 4px solid #22c55e;
+    animation: pulse-highlight 2s ease-in-out;
+  }
+}
+
+@keyframes pulse-highlight {
+  0% { background-color: #e8f5e8; }
+  50% { background-color: #dcfce7; }
+  100% { background-color: #e8f5e8; }
+}
+
+.delivery-address {
+  max-width: 200px;
+  word-break: break-word;
+}
+
+// Mejorar visualización de tags
+:host ::ng-deep {
+  .p-tag {
+    min-width: 120px;
+    text-align: center;
+    text-transform: capitalize;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}

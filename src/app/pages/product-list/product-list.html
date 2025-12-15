@@ -18,34 +18,18 @@
     </ng-template>
   </p-toolbar>
 
-  <!-- Filters -->
-  <div class="filters-card mb-4">
-    <div class="filters-grid">
-      <div class="filter-item">
-        <label>Categoría</label>
-        <p-autocomplete [(ngModel)]="selectedCategoryFilter" (options)="categories" placeholder="Todas las categorías"
-          [showClear]="true" styleClass="w-full">
-        </p-autocomplete>
-      </div>
-
-      <div class="filter-item">
-        <label>Solo Disponibles</label>
-        <p-inputSwitch [(ngModel)]="availableOnlyFilter">
-        </p-inputSwitch>
-      </div>
-
-      <div class="filter-actions">
-        <p-button icon="pi pi-filter" label="Aplicar" (onClick)="applyFilters()" styleClass="p-button-primary">
-        </p-button>
-
-        <p-button icon="pi pi-filter-slash" label="Limpiar" (onClick)="clearFilters()"
-          styleClass="p-button-secondary ml-2">
-        </p-button>
-      </div>
+  <div class="search-card mb-4">
+    <div class="p-inputgroup">
+      <span class="p-inputgroup-addon">
+        <i class="pi pi-search"></i>
+      </span>
+      <input type="text" pInputText [(ngModel)]="searchTerm" (keyup.enter)="onSearch()"
+        placeholder="Buscar productos por nombre, descripción o SKU..." class="w-full" />
+      <button pButton type="button" label="Buscar" (click)="onSearch()" class="p-button-primary"></button>
+      <button pButton type="button" label="Limpiar" (click)="clearSearch()" class="p-button-secondary"></button>
     </div>
   </div>
-
-  <!-- Products Table -->
+  <!-- Products Table (sin cambios) -->
   <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="rows" [first]="first"
     [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
     [rowsPerPageOptions]="[10, 25, 50]" responsiveLayout="scroll" styleClass="p-datatable-gridlines">
@@ -69,7 +53,8 @@
         <td>{{ product.id }}</td>
 
         <td>
-          <p-image [src]="product.image_url" alt="{{product.name}}" width="70" height="70" [preview]="true"
+          <p-image [src]="product.image_url || 'assets/images/no-image.png'" alt="{{product.name}}" width="70"
+            height="70" [preview]="product.image_url ? true : false"
             [imageStyle]="{'object-fit': 'cover', 'border-radius': '8px'}">
           </p-image>
         </td>
@@ -101,8 +86,8 @@
         </td>
 
         <td class="text-center">
-          <p-inputSwitch [(ngModel)]="product.is_available" (onChange)="toggleAvailability(product)">
-          </p-inputSwitch>
+          <p-toggleswitch [(ngModel)]="product.is_available" (onChange)="toggleAvailability(product)">
+          </p-toggleswitch>
         </td>
 
         <td>
@@ -135,8 +120,8 @@
     </ng-template>
   </p-table>
 
-  <!-- Dialog for Create/Edit Product -->
-  <p-dialog [(visible)]="displayDialog" [header]="dialogTitle" [modal]="true" [style]="{width: '700px'}"
+  <!-- Dialog for Create/Edit Product - ACTUALIZADO -->
+  <p-dialog [(visible)]="displayDialog" [header]="dialogTitle" [modal]="true" [style]="{width: '800px'}"
     [draggable]="false" [resizable]="false">
 
     <div class="dialog-content">
@@ -156,7 +141,7 @@
           </textarea>
         </div>
 
-        <!-- Price -->
+        <!-- Price and Stock -->
         <div class="field col-6">
           <label for="price" class="required">Precio (S/)</label>
           <p-inputNumber [(ngModel)]="productForm.price" mode="currency" currency="PEN" locale="es-PE" [min]="0"
@@ -164,7 +149,6 @@
           </p-inputNumber>
         </div>
 
-        <!-- Stock -->
         <div class="field col-6">
           <label for="stock" class="required">Stock Inicial</label>
           <p-inputNumber [(ngModel)]="productForm.stock" [min]="0" [showButtons]="true" inputId="stock"
@@ -175,25 +159,60 @@
         <!-- Category -->
         <div class="field col-12">
           <label for="category" class="required">Categoría</label>
-          <p-autocomplete [(ngModel)]="productForm.category_id" (options)="categories"
-            placeholder="Seleccione una categoría" inputId="category" styleClass="w-full">
+          <p-autocomplete [(ngModel)]="productForm.category_id" (options)="categories" optionLabel="label"
+            optionValue="value" placeholder="Seleccione una categoría" inputId="category" styleClass="w-full">
           </p-autocomplete>
         </div>
 
-        <!-- Image URL -->
+        <!-- Upload Image Section -->
         <div class="field col-12">
-          <label for="image_url" class="required">URL de Imagen</label>
-          <input pInputText id="image_url" [(ngModel)]="productForm.image_url"
-            placeholder="https://ejemplo.com/imagen.jpg" class="w-full">
-          <small class="text-muted">Ingresa la URL completa de la imagen del producto</small>
-        </div>
+          <label>Imagen del Producto</label>
 
-        <!-- Image Preview -->
-        <div class="field col-12" *ngIf="productForm.image_url">
-          <label>Vista Previa</label>
-          <div class="image-preview">
-            <img [src]="productForm.image_url" alt="Preview"
-              (error)="$event.target.src='https://via.placeholder.com/200?text=Error'" class="preview-img">
+          <!-- File Upload Button -->
+          <div class="upload-section mb-3">
+            <input type="file" id="imageInput" #fileInput (change)="onImageSelected($event)" accept="image/*"
+              style="display: none">
+
+            <p-button label="Seleccionar Imagen" icon="pi pi-upload" (onClick)="fileInput.click()"
+              styleClass="p-button-outlined p-button-secondary">
+            </p-button>
+
+            <small class="text-muted ml-3">
+              Máximo {{imageSizeLimitMB}}MB. Formatos: JPG, PNG, GIF, WebP
+            </small>
+          </div>
+
+          <!-- Image Preview or URL Input -->
+          <div *ngIf="imagePreview || productForm.image_url">
+            <div class="image-preview-container">
+              <div *ngIf="imagePreview" class="image-preview">
+                <img [src]="imagePreview" alt="Preview" class="preview-img">
+                <button pButton type="button" icon="pi pi-times" class="p-button-danger p-button-rounded remove-btn"
+                  (click)="removeImage()">
+                </button>
+              </div>
+
+              <div *ngIf="productForm.image_url && !imagePreview" class="image-preview">
+                <img [src]="productForm.image_url" alt="Preview"
+                  (error)="$event.target.src='assets/images/no-image.png'" class="preview-img">
+                <button pButton type="button" icon="pi pi-times" class="p-button-danger p-button-rounded remove-btn"
+                  (click)="removeImage()">
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- OR Separator -->
+          <div class="or-separator" *ngIf="!imagePreview">
+            <span>O</span>
+          </div>
+
+          <!-- URL Input -->
+          <div class="field col-12 mt-3" *ngIf="!imagePreview">
+            <label for="image_url">URL de Imagen (Alternativa)</label>
+            <input pInputText id="image_url" [(ngModel)]="productForm.image_url"
+              placeholder="https://ejemplo.com/imagen.jpg" class="w-full">
+            <small class="text-muted">Si no subes un archivo, puedes usar una URL de imagen existente</small>
           </div>
         </div>
       </div>
@@ -209,7 +228,7 @@
     </ng-template>
   </p-dialog>
 
-  <!-- Dialog for Stock Management -->
+  <!-- Dialog for Stock Management (sin cambios) -->
   <p-dialog [(visible)]="displayStockDialog" header="Gestionar Stock" [modal]="true" [style]="{width: '450px'}"
     [draggable]="false" [resizable]="false">
 

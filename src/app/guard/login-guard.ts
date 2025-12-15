@@ -22,7 +22,7 @@ export class LoginGuard implements CanActivate {
         if (!isAuthenticated) {
           return true;
         } else {
-          this.router.navigate(['/table/table-active']);
+          this.router.navigate(['/order']);
           return false;
         }
       })

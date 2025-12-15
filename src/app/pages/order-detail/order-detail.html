@@ -1,0 +1,289 @@
+<div class="order-detail-container p-4">
+  <!-- Cargando -->
+  <div *ngIf="loading" class="text-center p-6">
+    <p-progressSpinner></p-progressSpinner>
+    <p class="mt-2">Cargando detalles del pedido...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="p-error-card p-4 mb-4">
+    <p-message severity="error" [text]="error"></p-message>
+    <p-button label="Volver" icon="pi pi-arrow-left" [routerLink]="['/orders']" class="mt-3"></p-button>
+  </div>
+
+  <!-- Detalles del pedido -->
+  <div *ngIf="order && !loading" class="order-detail-content">
+    <!-- Header -->
+    <div class="order-header mb-6">
+      <div class="flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="text-3xl font-bold m-0">Pedido #{{ order.id }}</h1>
+          <p class="text-color-secondary m-0">
+            Creado el {{ order.created_at | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <p-button label="Volver" icon="pi pi-arrow-left" [routerLink]="['/orders']" styleClass="p-button-outlined">
+          </p-button>
+
+          <p-button *ngIf="canUpdateStatus()" [label]="'Cambiar a ' + getNextStatusLabel(order.status)"
+            icon="pi pi-sync" (click)="updateStatus()" styleClass="p-button-primary">
+          </p-button>
+        </div>
+      </div>
+
+      <!-- Información principal -->
+      <div class="grid">
+        <!-- Columna izquierda -->
+        <div class="col-12 md:col-8">
+          <!-- Información del cliente -->
+          <p-card header="Información del Cliente" class="mb-4">
+            <div class="grid">
+              <div class="col-12 md:col-6">
+                <div class="field">
+                  <label class="font-semibold">Cliente</label>
+                  <p class="text-xl">{{ order.user_name }}</p>
+                </div>
+
+                <div class="field">
+                  <label class="font-semibold">ID Usuario</label>
+                  <p>{{ order.user_id }}</p>
+                </div>
+              </div>
+
+              <div class="col-12 md:col-6">
+                <div class="field">
+                  <label class="font-semibold">Tipo de Pedido</label>
+                  <p-tag [value]="getOrderTypeLabel(order.order_type)"
+                    [severity]="order.order_type === 'dine_in' ? 'info' : 'warn'" class="text-lg">
+                  </p-tag>
+                </div>
+
+                <div class="field" *ngIf="order.order_type === 'dine_in' && order.table_number">
+                  <label class="font-semibold">Mesa</label>
+                  <p>
+                    <i class="pi pi-table mr-2"></i>
+                    Mesa {{ order.table_number }} ({{ order.table_capacity }} personas)
+                  </p>
+                </div>
+
+                <div class="field" *ngIf="order.order_type === 'delivery' && order.delivery_address">
+                  <label class="font-semibold">Dirección de Entrega</label>
+                  <p>
+                    <i class="pi pi-map-marker mr-2"></i>
+                    {{ order.delivery_address }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Instrucciones especiales -->
+          <p-card header="Instrucciones Especiales" class="mb-4" *ngIf="order.special_instructions">
+            <p>{{ order.special_instructions }}</p>
+          </p-card>
+        </div>
+
+        <!-- Columna derecha -->
+        <div class="col-12 md:col-4">
+          <!-- Estado del pedido -->
+          <p-card header="Estado del Pedido" class="mb-4">
+            <div class="text-center">
+              <p-tag [value]="order.status" (severity)="getStatusSeverity(order.status)"
+                class="text-xl p-3 w-full mb-3">
+              </p-tag>
+
+              <div class="status-timeline">
+                <div class="status-step" [class.active]="isStatusActive('recibido')">
+                  <div class="step-circle">
+                    <i class="pi pi-check"></i>
+                  </div>
+                  <span class="step-label">Recibido</span>
+                </div>
+
+                <div class="status-step" [class.active]="isStatusActive('en_preparacion')">
+                  <div class="step-circle">
+                    <i class="pi pi-cog"></i>
+                  </div>
+                  <span class="step-label">En Preparación</span>
+                </div>
+
+                <div class="status-step" [class.active]="isStatusActive('listo')">
+                  <div class="step-circle">
+                    <i class="pi pi-check-circle"></i>
+                  </div>
+                  <span class="step-label">Listo</span>
+                </div>
+
+                <div class="status-step" [class.active]="isStatusActive('entregado')">
+                  <div class="step-circle">
+                    <i class="pi pi-truck"></i>
+                  </div>
+                  <span class="step-label">Entregado</span>
+                </div>
+
+                <div class="status-step" [class.active]="isStatusActive('completado')">
+                  <div class="step-circle">
+                    <i class="pi pi-flag"></i>
+                  </div>
+                  <span class="step-label">Completado</span>
+                </div>
+              </div>
+            </div>
+          </p-card>
+
+          <!-- Información de pago -->
+          <p-card header="Información de Pago">
+            <div class="field mb-3">
+              <label class="font-semibold">Total</label>
+              <p class="text-2xl font-bold text-green-600">
+                ${{ order.total_amount | number:'1.2-2' }}
+              </p>
+            </div>
+
+            <div class="field mb-3">
+              <label class="font-semibold">Estado de Pago</label>
+              <p-tag [value]="order.is_paid ? 'Pagado' : 'Pendiente'" (severity)="order.is_paid ? 'success' : 'warn'">
+              </p-tag>
+            </div>
+
+            <div class="field" *ngIf="order.estimated_time">
+              <label class="font-semibold">Tiempo Estimado</label>
+              <p>{{ order.estimated_time }} minutos</p>
+            </div>
+
+            <div class="field">
+              <label class="font-semibold">Última Actualización</label>
+              <p>{{ order.updated_at | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items del pedido -->
+    <p-card header="Items del Pedido" class="mb-6">
+      <p-table [value]="order.items" styleClass="p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 80px">Imagen</th>
+            <th>Producto</th>
+            <th style="width: 120px">Precio Unitario</th>
+            <th style="width: 120px">Cantidad</th>
+            <th style="width: 120px">Subtotal</th>
+            <th style="width: 200px">Instrucciones</th>
+            <th style="width: 200px">descripcion</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>
+              <div class="product-image-container">
+                <img *ngIf="item.product_image" [src]="item.product_image" alt="{{item.product_name}}"
+                  class="product-image" (error)="item.product_image = ''">
+
+                <div *ngIf="!item.product_image" class="no-image-placeholder">
+                  <i class="pi pi-image"></i>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <strong>{{ item.product_name }}</strong>
+              <p class="text-color-secondary text-sm">ID: {{ item.product_id }}</p>
+            </td>
+
+            <td class="text-right">
+              ${{ item.unit_price | number:'1.2-2' }}
+            </td>
+
+            <td class="text-center">
+              <span class="quantity-badge">{{ item.quantity }}</span>
+            </td>
+
+            <td class="text-right font-bold">
+              ${{ item.subtotal | number:'1.2-2' }}
+            </td>
+
+            <td>
+              <p class="text-sm" *ngIf="item.special_instructions; else noInstructions">
+                {{ item.special_instructions }}
+              </p>
+              <ng-template #noInstructions>
+                <span class="text-color-secondary">Sin instrucciones</span>
+              </ng-template>
+            </td>
+            <td>
+              <p class="text-sm" *ngIf="item.product_description; else noDescription">
+                {{ item.product_description }}
+              </p>
+              <ng-template #noDescription>
+                <span class="text-color-secondary">Sin descripción</span>
+              </ng-template>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+          <tr>
+            <td colspan="4" class="text-right font-bold">Total:</td>
+            <td class="text-right font-bold text-green-600 text-xl">
+              ${{ order.total_amount | number:'1.2-2' }}
+            </td>
+            <td></td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+
+    <!-- 🔥 NUEVO: Sección de Extras -->
+    <app-order-detail-extras *ngIf="order" [orderId]="order.id" [orderTotal]="order.total_amount"
+      (extrasUpdated)="onExtrasUpdated($event)">
+    </app-order-detail-extras>
+
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td colspan="4" class="text-right font-bold">
+          Total Items:
+        </td>
+        <td class="text-right font-bold">
+          ${{ order.total_amount | number:'1.2-2' }}
+        </td>
+        <td></td>
+      </tr>
+
+      <tr *ngIf="extrasTotal > 0">
+        <td colspan="4" class="text-right font-bold text-primary">
+          Total Extras:
+        </td>
+        <td class="text-right font-bold text-primary">
+          ${{ extrasTotal | number:'1.2-2' }}
+        </td>
+        <td></td>
+      </tr>
+
+      <tr>
+        <td colspan="4" class="text-right font-bold text-green-600">
+          TOTAL FINAL:
+        </td>
+        <td class="text-right font-bold text-green-600 text-xl">
+          ${{ getFinalTotal() | number:'1.2-2' }}
+        </td>
+        <td></td>
+      </tr>
+    </ng-template>
+
+    <!-- Acciones -->
+    <div class="flex justify-content-end gap-3">
+      <p-button label="Marcar como Pagado" icon="pi pi-check-circle" [disabled]="order.is_paid" (click)="markAsPaid()"
+        styleClass="p-button-success">
+      </p-button>
+
+      <p-button label="Eliminar Pedido" icon="pi pi-trash" (click)="deleteOrder()" styleClass="p-button-danger">
+      </p-button>
+    </div>
+  </div>
+</div>

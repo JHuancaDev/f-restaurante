@@ -6,7 +6,7 @@ export interface ProductM {
   description: string;
   price: number;
   category_id: number;
-  image_url: string;
+  image_url?: string;
   stock: number;
   is_available: boolean;
   created_at?: string;
@@ -18,8 +18,8 @@ export interface ProductCreate {
   description: string;
   price: number;
   category_id: number;
-  image_url: string;
   stock: number;
+  image_url?: string;
 }
 
 export interface ProductUpdate {
@@ -44,4 +44,15 @@ export interface CategoryOption {
   label: string;
   value: number;
 
+}
+
+// Para manejo de archivos en formularios
+export interface ProductFormData {
+  name: string;
+  description: string;
+  price: number;
+  category_id: number;
+  stock: number;
+  image_url?: string;
+  image_file?: File;
 }

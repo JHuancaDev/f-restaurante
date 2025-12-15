@@ -1,0 +1,186 @@
+<div class="order-extras-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Header -->
+  <div class="flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="m-0">Extras de la Orden</h3>
+    </div>
+  </div>
+
+  <!-- Lista de Extras -->
+  <p-card *ngIf="extras.length > 0" class="mb-4">
+    <p-table [value]="extras" [loading]="loading" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Extra</th>
+          <th width="120px">Cantidad</th>
+          <th width="120px">Precio Unit.</th>
+          <th width="120px">Subtotal</th>
+          <th width="100px">Acciones</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-extra>
+        <tr>
+          <td>
+            <div class="flex align-items-center gap-2">
+              <div *ngIf="extra.extra_image" class="extra-image">
+                <img [src]="extra.extra_image" [alt]="extra.extra_name" class="w-2rem h-2rem border-round">
+              </div>
+              <div>
+                <strong>{{ extra.extra_name }}</strong>
+                <p-tag 
+                  [value]="extra.is_free ? 'Gratis' : extra.category"
+                  (severity)="getExtraSeverity(extra)"
+                  styleClass="ml-2">
+                </p-tag>
+              </div>
+            </div>
+          </td>
+          
+          <td class="text-center">
+            <span class="quantity-badge">{{ extra.quantity }}</span>
+          </td>
+          
+          <td class="text-right">
+            <span [ngClass]="{'text-green-600': extra.is_free}">
+              {{ extra.is_free ? 'Gratis' : ('$' + (extra.unit_price | number:'1.2-2')) }}
+            </span>
+          </td>
+          
+          <td class="text-right font-bold">
+            ${{ extra.subtotal | number:'1.2-2' }}
+          </td>
+          
+          <td class="text-center">
+            <p-button 
+              icon="pi pi-trash" 
+              styleClass="p-button-sm p-button-danger"
+              (click)="removeExtra(extra.id, extra.extra_name)"
+              pTooltip="Eliminar">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="footer">
+        <tr>
+          <td colspan="3" class="text-right font-bold">Total Extras:</td>
+          <td class="text-right font-bold text-primary">
+            ${{ calculateExtrasTotal() | number:'1.2-2' }}
+          </td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td colspan="3" class="text-right font-bold">Total Orden + Extras:</td>
+          <td class="text-right font-bold text-green-600 text-xl">
+            ${{ getTotalWithExtras() | number:'1.2-2' }}
+          </td>
+          <td></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Mensaje sin extras -->
+  <div *ngIf="extras.length === 0 && !loading" class="empty-extras text-center p-6">
+    <i class="pi pi-plus-circle text-6xl text-color-secondary mb-3"></i>
+    <h4 class="mb-2">Sin Extras</h4>
+    <p class="text-color-secondary mb-4">Esta orden no tiene extras adicionales</p>
+  </div>
+
+  <!-- Dialog para agregar extras -->
+  <p-dialog 
+    [(visible)]="showAddDialog" 
+    header="Agregar Extra" 
+    [modal]="true" 
+    [style]="{width: '450px'}"
+    [draggable]="false" 
+    [resizable]="false">
+    
+    <div class="flex flex-column gap-3">
+      <!-- Selección de extra -->
+      <div class="field">
+        <label for="extraSelect" class="font-semibold block mb-2">
+          Extra Disponible *
+        </label>
+        <p-autocomplete 
+          (options)="availableExtras" 
+          [(ngModel)]="selectedExtra"
+          optionLabel="name"
+          optionValue="value"
+          placeholder="Seleccione un extra"
+          (filter)="true"
+          filterBy="name"
+          [dropdown]="true"
+          styleClass="w-full">
+          <ng-template let-extra pTemplate="item">
+            <div class="flex align-items-center gap-2">
+              <div *ngIf="extra.image_url" class="extra-image-preview">
+                <img [src]="extra.image_url" [alt]="extra.name" class="w-3rem h-3rem border-round">
+              </div>
+              <div>
+                <div>{{ extra.name }}</div>
+                <small class="text-color-secondary">
+                  {{ extra.is_free ? 'Gratis' : '$' + (extra.price | number:'1.2-2') }} • 
+                  {{ extra.stock }} disponibles
+                </small>
+              </div>
+            </div>
+          </ng-template>
+        </p-autocomplete>
+      </div>
+
+      <!-- Cantidad -->
+      <div class="field">
+        <label for="quantity" class="font-semibold block mb-2">
+          Cantidad *
+        </label>
+        <p-inputNumber 
+          [(ngModel)]="quantity" 
+          [min]="1" 
+          [max]="selectedExtra?.stock || 99"
+          [showButtons]="true"
+          styleClass="w-full">
+        </p-inputNumber>
+      </div>
+
+      <!-- Resumen -->
+      <div *ngIf="selectedExtra" class="p-3 border-round surface-card">
+        <div class="grid">
+          <div class="col-6">
+            <label class="font-semibold">Precio Unitario:</label>
+            <p class="text-xl">{{ selectedExtra.is_free ? 'Gratis' : '$' + (selectedExtra.price | number:'1.2-2') }}</p>
+          </div>
+          <div class="col-6 text-right">
+            <label class="font-semibold">Subtotal:</label>
+            <p class="text-xl text-primary">
+              ${{ (selectedExtra.is_free ? 0 : selectedExtra.price * quantity) | number:'1.2-2' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button 
+        label="Cancelar" 
+        icon="pi pi-times"
+        (click)="showAddDialog = false"
+        styleClass="p-button-text">
+      </p-button>
+      
+      <p-button 
+        label="Agregar" 
+        icon="pi pi-check"
+        (click)="addExtra()"
+        [disabled]="!selectedExtra || loading"
+        [loading]="loading"
+        styleClass="p-button-success">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>

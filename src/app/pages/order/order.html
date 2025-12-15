@@ -1,0 +1,128 @@
+<div class="p-4">
+  <p-card header="Órdenes en Tiempo Real" class="shadow-2">
+    <div class="mb-4 flex justify-content-between align-items-center">
+      <div>
+        <h2 class="m-0">Lista de Órdenes</h2>
+        <small class="text-color-secondary">Actualización en tiempo real</small>
+      </div>
+      <div class="flex align-items-center gap-2">
+        <p-badge [value]="orders.length" severity="info" class="mr-2">
+        </p-badge>
+        <p-tag [severity]="websocketService.connectionStatus ? 'success' : 'danger'"
+          [value]="websocketService.connectionStatus ? 'Conectado' : 'Desconectado'" icon="pi pi-circle-fill">
+        </p-tag>
+      </div>
+    </div>
+
+    <!-- app/pages/order/order.html - MODIFICAR LA TABLA -->
+    <p-table [value]="orders" [loading]="loading" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]"
+      styleClass="p-datatable-striped p-datatable-gridlines">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Mesa/Dirección</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Hora</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-order>
+        <tr [id]="'order-' + order.id" class="order-row" [class.updated-order]="isOrderUpdated(order.id)"
+          [class.has-extras]="order.extras && order.extras.length > 0">
+
+          <td>
+            <div class="order-id-container">
+              <strong>#{{ order.id }}</strong>
+              <!-- 🔥 AGREGAR: Indicador de extras -->
+              <span *ngIf="order.extras && order.extras.length > 0" class="extras-badge"
+                pTooltip="Esta orden tiene extras">
+                <i class="pi pi-plus-circle"></i>
+                <span class="extras-count">{{ order.extras.length }}</span>
+              </span>
+              <!-- 🔥 AGREGAR: Indicador de actualización reciente -->
+              <span *ngIf="isOrderUpdated(order.id)" class="update-badge" pTooltip="Actualizado recientemente">
+                <i class="pi pi-bell"></i>
+              </span>
+            </div>
+          </td>
+
+          <td>{{ order.user_name }}</td>
+          <td>
+            <p-tag [value]="getOrderTypeLabel(order.order_type)"
+              [severity]="order.order_type === 'dine_in' ? 'info' : 'warn'">
+            </p-tag>
+          </td>
+          <td>
+            <span *ngIf="order.order_type === 'dine_in' && order.table_number" class="flex align-items-center gap-1">
+              <i class="pi pi-table"></i>
+              Mesa {{ order.table_number }} ({{ order.table_capacity }} pers.)
+            </span>
+            <span *ngIf="order.order_type === 'delivery' && order.delivery_address"
+              class="delivery-address flex align-items-center gap-1">
+              <i class="pi pi-truck"></i>
+              {{ order.delivery_address }}
+            </span>
+            <span *ngIf="!order.table_number && !order.delivery_address" class="text-color-secondary">
+              Sin información
+            </span>
+          </td>
+          <td>
+            <div class="flex flex-column">
+              <span class="font-bold">{{ calculateItemsCount(order.items) }} items</span>
+              <small class="text-color-secondary">
+                {{ order.items[0]?.product_name }}
+                <span *ngIf="order.items.length > 1">y {{ order.items.length - 1 }} más</span>
+              </small>
+              <!-- 🔥 AGREGAR: Mostrar extras si existen -->
+              <div *ngIf="order.extras && order.extras.length > 0" class="extras-info">
+                <small class="text-primary">
+                  +{{ order.extras.length }} extra(s) • +${{ calculateExtrasTotal(order.extras) | number:'1.2-2' }}
+                </small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="total-amount">
+              <strong class="text-green-600">${{ order.total_amount | number:'1.2-2' }}</strong>
+              <!-- 🔥 AGREGAR: Indicar si el total cambió -->
+              <span *ngIf="isOrderUpdated(order.id)" class="total-increase">
+                <i class="pi pi-arrow-up"></i>
+              </span>
+            </div>
+          </td>
+          <td>
+            <p-tag [value]="order.status" (severity)="getStatusSeverity(order.status)" style="cursor: pointer;"
+              (click)="updateOrderStatus(order.id, getNextStatus(order.status))" pTooltip="Click para cambiar estado">
+            </p-tag>
+          </td>
+          <td>
+            <small>{{ order.created_at | date:'shortTime' }}</small>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button icon="pi pi-eye" styleClass="p-button-sm p-button-info mr-1"
+                [routerLink]="['/orders', order.id]" pTooltip="Ver detalles" >
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- 🔥 AGREGAR: Mensaje cuando no hay órdenes -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center p-4 text-color-secondary">
+            <i class="pi pi-inbox" style="font-size: 2rem"></i>
+            <p class="mt-2">No hay órdenes disponibles</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

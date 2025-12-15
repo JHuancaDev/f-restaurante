@@ -1,0 +1,92 @@
+.card {
+  padding: 2rem;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+
+  h2 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+  }
+
+  form {
+    margin-top: 1.5rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.2rem;
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #444;
+    }
+
+    input {
+      padding: 0.75rem;
+      border-radius: 8px !important;
+      border: 1px solid #d0d0d0 !important;
+      transition: border-color 0.25s, box-shadow 0.25s;
+
+      &:focus {
+        border-color: #3f51b5 !important;
+        box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+      }
+
+      &.ng-invalid.ng-dirty {
+        border-color: #d32f2f !important;
+        box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
+      }
+    }
+
+    .p-error {
+      margin-top: 0.3rem;
+      font-size: 0.85rem;
+      color: #d32f2f;
+    }
+  }
+
+  /* Checkboxes alineados y con espacio */
+  p-checkbox {
+    margin-right: 0.5rem;
+  }
+
+  .flex.gap-2 button {
+    min-width: 130px;
+  }
+
+  /* Botones principales */
+  .p-button-success {
+    background: #2e7d32 !important;
+    border-color: #2e7d32 !important;
+
+    &:hover {
+      background: #1b5e20 !important;
+    }
+  }
+
+  .p-button-secondary {
+    background: #e0e0e0 !important;
+    color: #333 !important;
+    border-color: #d5d5d5 !important;
+
+    &:hover {
+      background: #cfcfcf !important;
+    }
+  }
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.5rem;
+
+    .flex {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+}

@@ -59,8 +59,18 @@
           <td>{{ category.id }}</td>
 
           <td>
-            <p-image [src]="category.url_image" alt="{{category.name}}" width="80" height="80" [preview]="true">
-            </p-image>
+            <div class="category-image-container">
+              <ng-container *ngIf="getCategoryImage(category); else noImage">
+                <img [src]="getCategoryImage(category)" alt="{{category.name}}" class="category-image"
+                  (error)="handleImageError(category)">
+              </ng-container>
+
+              <ng-template #noImage>
+                <div class="no-image-placeholder">
+                  <i class="pi pi-image"></i>
+                </div>
+              </ng-template>
+            </div>
           </td>
 
           <td>
@@ -109,8 +119,8 @@
     </p-table>
   </p-card>
 
-  <!-- Dialog for Create/Edit -->
-  <p-dialog [(visible)]="displayDialog" [header]="dialogTitle" [modal]="true" [style]="{width: '600px'}"
+  <!-- Dialog for Create/Edit - ACTUALIZADO -->
+  <p-dialog [(visible)]="displayDialog" [header]="dialogTitle" [modal]="true" [style]="{width: '700px'}"
     [draggable]="false" [resizable]="false">
 
     <div class="dialog-content">
@@ -129,21 +139,55 @@
         </textarea>
       </div>
 
-      <!-- Image URL -->
+      <!-- Upload Image Section -->
       <div class="field">
-        <label for="url_image" class="required">URL de Imagen</label>
-        <input pInputText id="url_image" [(ngModel)]="categoryForm.url_image"
-          placeholder="https://ejemplo.com/imagen.jpg" class="w-full">
+        <label>Imagen de la Categoría</label>
 
-        <small class="text-muted">Ingresa la URL completa de la imagen</small>
-      </div>
+        <!-- File Upload Button -->
+        <div class="upload-section mb-3">
+          <input type="file" id="imageInput" #fileInput (change)="onImageSelected($event)" accept="image/*"
+            style="display: none">
 
-      <!-- Image Preview -->
-      <div class="field" *ngIf="categoryForm.url_image">
-        <label>Vista Previa</label>
-        <div class="image-preview">
-          <img [src]="categoryForm.url_image" alt="Preview"
-            (error)="$event.target.src='https://via.placeholder.com/150?text=Error+al+cargar'" class="preview-img">
+          <p-button label="Seleccionar Imagen" icon="pi pi-upload" (onClick)="fileInput.click()"
+            styleClass="p-button-outlined p-button-secondary">
+          </p-button>
+
+          <small class="text-muted ml-3">
+            Máximo {{imageSizeLimitMB}}MB. Formatos: JPG, PNG, GIF, WebP
+          </small>
+        </div>
+
+        <!-- Image Preview or URL Input -->
+        <div *ngIf="imagePreview || categoryForm.url_image">
+          <div class="image-preview-container">
+            <div *ngIf="imagePreview" class="image-preview">
+              <img [src]="imagePreview" alt="Preview" class="preview-img">
+              <button pButton type="button" icon="pi pi-times" class="p-button-danger p-button-rounded remove-btn"
+                (click)="removeImage()">
+              </button>
+            </div>
+
+            <div *ngIf="categoryForm.url_image && !imagePreview" class="image-preview">
+              <img [src]="categoryForm.url_image" alt="Preview" (error)="$event.target.src='assets/images/no-image.png'"
+                class="preview-img">
+              <button pButton type="button" icon="pi pi-times" class="p-button-danger p-button-rounded remove-btn"
+                (click)="removeImage()">
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OR Separator -->
+        <div class="or-separator" *ngIf="!imagePreview">
+          <span>O</span>
+        </div>
+
+        <!-- URL Input -->
+        <div class="field mt-3" *ngIf="!imagePreview">
+          <label for="url_image">URL de Imagen (Alternativa)</label>
+          <input pInputText id="url_image" [(ngModel)]="categoryForm.url_image"
+            placeholder="https://ejemplo.com/imagen.jpg" class="w-full">
+          <small class="text-muted">Si no subes un archivo, puedes usar una URL de imagen existente</small>
         </div>
       </div>
     </div>
@@ -153,7 +197,8 @@
       </p-button>
 
       <p-button [label]="isEditMode ? 'Actualizar' : 'Crear'" icon="pi pi-check" (onClick)="saveCategory()"
-        [loading]="loading"></p-button>
+        [loading]="loading">
+      </p-button>
     </ng-template>
   </p-dialog>
 </div>

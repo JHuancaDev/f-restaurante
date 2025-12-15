@@ -1,0 +1,296 @@
+.order-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+// Cargando
+.text-center {
+  padding: 3rem;
+}
+
+// Error
+.p-error-card {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+// Header
+.order-header {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+  
+  h1 {
+    color: #1a202c;
+    font-size: 1.75rem;
+  }
+  
+  .text-color-secondary {
+    color: #718096;
+    font-size: 0.875rem;
+  }
+}
+
+// Cards
+p-card {
+  margin-bottom: 1.5rem;
+  
+  ::ng-deep .p-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  ::ng-deep .p-card-header {
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+  }
+  
+  ::ng-deep .p-card-body {
+    padding: 1.5rem;
+  }
+}
+
+// Grid layout
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+// Form fields
+.field {
+  margin-bottom: 1rem;
+  
+  label {
+    display: block;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+  }
+  
+  p {
+    margin: 0;
+    color: #2d3748;
+  }
+  
+  .text-xl {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+// Status timeline
+.status-timeline {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+}
+
+.status-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    
+    i {
+      color: #718096;
+    }
+  }
+  
+  .step-label {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #718096;
+    white-space: nowrap;
+  }
+  
+  &.active {
+    .step-circle {
+      background: #48bb78;
+      
+      i {
+        color: white;
+      }
+    }
+    
+    .step-label {
+      color: #48bb78;
+      font-weight: 600;
+    }
+  }
+}
+
+// Product images
+.product-image-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f7fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-image-placeholder {
+  color: #cbd5e0;
+  
+  i {
+    font-size: 1.5rem;
+  }
+}
+
+// Quantity badge
+.quantity-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #ebf8ff;
+  color: #3182ce;
+  border-radius: 999px;
+  font-weight: 600;
+  min-width: 32px;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+// Table
+::ng-deep .p-datatable {
+  font-size: 0.875rem;
+  
+  th {
+    background: #f7fafc;
+    font-weight: 600;
+    color: #4a5568;
+    padding: 0.75rem 1rem;
+  }
+  
+  td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+  }
+}
+
+// Colors
+.text-green-600 {
+  color: #38a169;
+}
+
+.text-color-secondary {
+  color: #718096;
+}
+
+// Buttons
+::ng-deep .p-button {
+  font-weight: 500;
+  
+  &.p-button-outlined {
+    border-color: #cbd5e0;
+    color: #4a5568;
+    
+    &:hover {
+      background: #f7fafc;
+      border-color: #a0aec0;
+    }
+  }
+  
+  &.p-button-success {
+    background: #48bb78;
+    border-color: #48bb78;
+  }
+  
+  &.p-button-warn {
+    background: #ed8936;
+    border-color: #ed8936;
+  }
+  
+  &.p-button-danger {
+    background: #f56565;
+    border-color: #f56565;
+  }
+}
+
+// Actions section
+.flex.justify-content-end {
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 1.5rem;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .order-header {
+    padding: 1rem;
+  }
+  
+  .status-timeline {
+    flex-direction: column;
+    gap: 1rem;
+    
+    &::before {
+      display: none;
+    }
+  }
+  
+  .status-step {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    
+    .step-label {
+      text-align: left;
+    }
+  }
+  
+  ::ng-deep .p-datatable {
+    font-size: 0.75rem;
+    
+    th, td {
+      padding: 0.5rem;
+    }
+  }
+}   

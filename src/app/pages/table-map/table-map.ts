@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Table, UpdateTablePositionRequest } from '../../models/table';
 import { Subscription } from 'rxjs';
 import { TableService } from '../../service/table-service';
@@ -18,9 +18,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './table-map.html',
   styleUrl: './table-map.scss',
 })
-export class TableMap implements OnInit, OnDestroy, AfterViewInit{
- @ViewChild('restaurantMap') mapContainer!: ElementRef;
-  
+export class TableMap implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('restaurantMap') mapContainer!: ElementRef;
+
   tables: Table[] = [];
   loading: boolean = false;
   scale: number = 1;
@@ -41,13 +41,14 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
   constructor(
     private tableService: TableService,
     private dragService: DragService,
-    private messageService: MessageService
-  ) {}
+    private messageService: MessageService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadTables();
     this.dragSubscription = this.dragService.tableMoved$.subscribe(
-      ({tableId, newPosition}) => {
+      ({ tableId, newPosition }) => {
         this.updateTablePosition(tableId, newPosition);
       }
     );
@@ -67,6 +68,9 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
       next: (tables) => {
         this.tables = tables.filter(table => table.is_active);
         this.loading = false;
+
+        // <--- forzamos detección de cambios después de asignar las mesas
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading tables:', error);
@@ -76,13 +80,14 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
           detail: 'Error al cargar las mesas'
         });
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
   setupDragAndDrop(): void {
     const mapElement = this.mapContainer.nativeElement;
-    
+
     mapElement.addEventListener('dragover', (e: DragEvent) => {
       e.preventDefault();
       this.onDragOver(e);
@@ -96,7 +101,7 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
 
   onTableDragStart(event: DragEvent, table: Table): void {
     this.draggedTable = table;
-    
+
     // Calcular offset del mouse respecto al centro de la mesa
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     this.dragOffset = {
@@ -106,7 +111,7 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
 
     // Establecer datos de transferencia
     event.dataTransfer?.setData('text/plain', table.id.toString());
-    
+
     // Efecto visual de arrastre
     (event.target as HTMLElement).style.opacity = '0.6';
   }
@@ -118,16 +123,16 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
-    
+
     if (this.draggedTable) {
       const mapRect = this.mapContainer.nativeElement.getBoundingClientRect();
       const x = event.clientX - mapRect.left - this.dragOffset.x;
       const y = event.clientY - mapRect.top - this.dragOffset.y;
-      
+
       // Snap to grid
       const snappedX = Math.round(x / this.mapConfig.gridSize) * this.mapConfig.gridSize;
       const snappedY = Math.round(y / this.mapConfig.gridSize) * this.mapConfig.gridSize;
-      
+
       // Actualizar posición visualmente
       const tableElement = document.querySelector(`[data-table-id="${this.draggedTable.id}"]`) as HTMLElement;
       if (tableElement) {
@@ -139,26 +144,26 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
-    
+
     if (this.draggedTable) {
       const mapRect = this.mapContainer.nativeElement.getBoundingClientRect();
       const x = event.clientX - mapRect.left - this.dragOffset.x;
       const y = event.clientY - mapRect.top - this.dragOffset.y;
-      
+
       // Snap to grid
       const snappedX = Math.round(x / this.mapConfig.gridSize) * this.mapConfig.gridSize;
       const snappedY = Math.round(y / this.mapConfig.gridSize) * this.mapConfig.gridSize;
-      
+
       // Validar posición dentro del mapa
       const validX = Math.max(0, Math.min(snappedX, this.mapConfig.width - 60));
       const validY = Math.max(0, Math.min(snappedY, this.mapConfig.height - 60));
-      
+
       // Emitir evento de movimiento
       this.dragService.emitTableMoved(this.draggedTable.id, { x: validX, y: validY });
     }
   }
 
-  updateTablePosition(tableId: number, newPosition: {x: number, y: number}): void {
+  updateTablePosition(tableId: number, newPosition: { x: number, y: number }): void {
     const positionData: UpdateTablePositionRequest = {
       position_x: newPosition.x,
       position_y: newPosition.y
@@ -171,7 +176,7 @@ export class TableMap implements OnInit, OnDestroy, AfterViewInit{
         if (tableIndex !== -1) {
           this.tables[tableIndex] = updatedTable;
         }
-        
+
         this.messageService.add({
           severity: 'success',
           summary: 'Éxito',

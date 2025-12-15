@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -35,7 +35,8 @@ export class Login {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   onLogin() {
@@ -58,7 +59,8 @@ export class Login {
     this.authService.login(loginData).subscribe({
       next: (response) => {
         this.loading = false;
-        this.router.navigate(['/table/table-active']);
+        this.router.navigate(['/order']);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.loading = false;

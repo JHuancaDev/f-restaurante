@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 
 import { ToastModule } from 'primeng/toast';
 import { Menu } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
+import { AuthService } from '../../service/auth-service';
 
 
 @Component({
@@ -17,7 +18,11 @@ import { MenuItem } from 'primeng/api';
 export class Sidebar {
   items: MenuItem[] | undefined;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private messageService: MessageService
+  ) { }
 
   ngOnInit() {
     this.items = [
@@ -25,22 +30,22 @@ export class Sidebar {
         label: 'Mesas',
         items: [
           {
-            label: 'Mesas Activas',
-            icon: 'pi pi-plus',
-            routerLink: '/table/table-active',
+            label: 'ordenes',
+            icon: 'pi pi-list',
+            routerLink: '/order',
             routerActive: 'active'
           },
           {
             label: 'Editar Mesas',
-            icon: 'pi pi-search',
+            icon: 'pi pi-pen-to-square',
             routerLink: '/tables-list'
           },
           {
-            label: 'Editar Mesas',
-            icon: 'pi pi-search',
+            label: 'Plano de Mesas',
+            icon: 'pi pi-table',
             routerLink: '/tables/map'
           }
-          
+
 
         ]
       },
@@ -49,13 +54,8 @@ export class Sidebar {
         items: [
           {
             label: 'Productos',
-            icon: 'pi pi-cog',
+            icon: 'pi pi-tag',
             routerLink: '/product-list',
-          },
-          {
-            label: 'produto lista',
-            icon: 'pi pi-sign-out',
-            routerLink: '/product-list'
           }
         ]
       },
@@ -63,25 +63,20 @@ export class Sidebar {
         label: 'Categoria',
         items: [
           {
-            label: 'Productos',
-            icon: 'pi pi-cog',
+            label: 'Categoria',
+            icon: 'pi pi-th-large',
             routerLink: '/category',
-          },
-          {
-            label: 'produto lista',
-            icon: 'pi pi-sign-out',
-            routerLink: '/category'
           }
         ]
       },
       {
-        label: 'Ventas',
+        label: 'Extra',
         items: [
           {
-            label: 'ventas',
-            icon: 'pi pi-cog',
-            routerLink: '/sales',
-          },
+            label: 'Extra',
+            icon: 'pi pi-th-large',
+            routerLink: '/extras',
+          }
         ]
       },
       {
@@ -89,11 +84,41 @@ export class Sidebar {
         items: [
           {
             label: 'usuarios',
-            icon: 'pi pi-cog',
+            icon: 'pi pi-user',
             routerLink: '/users',
           },
         ]
-      }
+      },
+      {
+        label: 'Comentarios',
+        items: [
+          {
+            label: 'Comentarios',
+            icon: 'pi pi-comments',
+            routerLink: '/reviews',
+          },
+        ]
+      },
+      {
+        separator: true
+      },
+      {
+        label: '',
+        items: [
+          {
+            label: 'Cerrar Sesión',
+            icon: 'pi pi-sign-out',
+            styleClass: 'logout-item', // Clase CSS personalizada
+            command: () => {
+              this.logout();
+            }
+          },
+        ]
+      },
     ];
+  }
+  logout() {
+    // Mostrar confirmación opcional
+    this.authService.logout();
   }
 }

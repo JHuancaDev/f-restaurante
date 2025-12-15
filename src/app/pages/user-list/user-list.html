@@ -128,7 +128,6 @@
         <th pSortableColumn="created_at" style="width: 150px">
           Fecha Registro <p-sortIcon field="created_at"></p-sortIcon>
         </th>
-        <th style="width: 100px">Acciones</th>
       </tr>
     </ng-template>
 
@@ -164,26 +163,7 @@
         <td>
           <span class="text-500">{{ formatDate(user.created_at) }}</span>
         </td>
-        <td>
-          <div class="flex gap-1 justify-content-center">
-            <button 
-              pButton 
-              icon="pi pi-eye" 
-              class="p-button-rounded p-button-info p-button-sm"
-              pTooltip="Ver detalles"
-              tooltipPosition="top">
-            </button>
-            
-            <button 
-              pButton 
-              icon="pi pi-cog" 
-              class="p-button-rounded p-button-warning p-button-sm"
-              pTooltip="Gestionar usuario"
-              tooltipPosition="top"
-              [disabled]="true">
-            </button>
-          </div>
-        </td>
+        
       </tr>
     </ng-template>
 

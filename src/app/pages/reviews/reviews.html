@@ -1,0 +1,213 @@
+<!-- components/admin-reviews/admin-reviews.component.html -->
+<div class="card">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Gestión de Reseñas</h2>
+    <div class="flex align-items-center gap-2">
+      <p-toggleswitch  
+        [(ngModel)]="approvedOnly" 
+        (onChange)="onApprovedOnlyChange()"
+        [ngModelOptions]="{standalone: true}">
+      </p-toggleswitch>
+      <label>Solo aprobadas</label>
+    </div>
+  </div>
+
+  <p-table 
+    [value]="reviews" 
+    [loading]="loading"
+    [paginator]="true" 
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    styleClass="p-datatable-sm">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Producto</th>
+        <th>Usuario</th>
+        <th>Rating</th>
+        <th>Comentario</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+        <th style="width: 200px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-review>
+      <tr>
+        <td>
+          <div class="flex align-items-center gap-2">
+            <img 
+              [src]="review.product_image || 'assets/images/placeholder.png'" 
+              [alt]="review.product_name"
+              class="product-image"
+              style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+            <span>{{ review.product_name }}</span>
+          </div>
+        </td>
+        <td>{{ review.user_name }}</td>
+        <td>
+          <p-rating 
+            [ngModel]="review.rating" 
+            [readonly]="true"
+            (cancel)="false"
+            styleClass="text-sm">
+          </p-rating>
+        </td>
+        <td>
+          <span class="comment-preview">{{ review.comment | slice:0:50 }}{{ review.comment.length > 50 ? '...' : '' }}</span>
+        </td>
+        <td>
+          <p-tag 
+            [value]="getStatusText(review.is_approved)" 
+            (severity)="getSeverity(review.is_approved)">
+          </p-tag>
+        </td>
+        <td>{{ review.created_at | date:'short' }}</td>
+        <td>
+          <div class="flex gap-1">
+            <p-button 
+              icon="pi pi-chart-bar" 
+              styleClass="p-button-sm p-button-info"
+              (onClick)="showProductStats(review)"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Estadísticas">
+            </p-button>
+
+            <p-button 
+              *ngIf="!review.is_approved"
+              icon="pi pi-check" 
+              styleClass="p-button-sm p-button-success"
+              (onClick)="approveReview(review)"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Aprobar">
+            </p-button>
+
+            <p-button 
+              icon="pi pi-pencil" 
+              styleClass="p-button-sm p-button-warning"
+              (onClick)="editReview(review)"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Editar">
+            </p-button>
+
+            <p-button 
+              icon="pi pi-trash" 
+              styleClass="p-button-sm p-button-danger"
+              (onClick)="deleteReview(review)"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Eliminar">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center">
+          No se encontraron reseñas
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Dialog de Edición -->
+<p-dialog 
+  [(visible)]="displayEditDialog" 
+  [style]="{width: '500px'}" 
+  header="Editar Reseña"
+  [modal]="true"
+  styleClass="p-fluid">
+  
+  <div *ngIf="selectedReview" class="field">
+    <label for="rating">Rating</label>
+    <p-rating 
+      [(ngModel)]="selectedReview.rating" 
+      (cancel)="false">
+    </p-rating>
+  </div>
+
+  <div *ngIf="selectedReview" class="field">
+    <label for="comment">Comentario</label>
+    <textarea 
+      id="comment" 
+      [(ngModel)]="selectedReview.comment" 
+      rows="5" 
+      pInputTextarea
+      class="w-full">
+    </textarea>
+  </div>
+
+  <div *ngIf="selectedReview" class="field-checkbox">
+    <p-checkbox 
+      [(ngModel)]="selectedReview.is_approved" 
+      [binary]="true"
+      inputId="is_approved">
+    </p-checkbox>
+    <label for="is_approved" class="ml-2">Aprobado</label>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Cancelar" 
+      icon="pi pi-times" 
+      (onClick)="displayEditDialog = false"
+      styleClass="p-button-text">
+    </p-button>
+    <p-button 
+      label="Guardar" 
+      icon="pi pi-check" 
+      (onClick)="saveReview()"
+      styleClass="p-button-success">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog de Estadísticas -->
+<p-dialog 
+  [(visible)]="displayStatsDialog" 
+  [style]="{width: '400px'}" 
+  header="Estadísticas del Producto"
+  [modal]="true">
+  
+  <div *ngIf="productStats && !loadingStats" class="grid">
+    <div class="col-12">
+      <h4>Rating Promedio: {{ productStats.average_rating | number:'1.1-1' }}</h4>
+    </div>
+    <div class="col-12">
+      <p>Total de Reseñas: {{ productStats.total_reviews }}</p>
+    </div>
+    <div class="col-12" *ngIf="productStats.rating_distribution">
+      <h5>Distribución de Ratings:</h5>
+      <div *ngFor="let rating of [5,4,3,2,1]" class="flex align-items-center gap-2 mb-2">
+        <span>{{ rating }} estrellas:</span>
+        <p-progressBar 
+          [value]="(productStats.rating_distribution[rating] / productStats.total_reviews) * 100"
+          [showValue]="false">
+        </p-progressBar>
+        <span>({{ productStats.rating_distribution[rating] || 0 }})</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loadingStats" class="text-center">
+    <p-progressSpinner></p-progressSpinner>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Cerrar" 
+      (onClick)="displayStatsDialog = false"
+      styleClass="p-button-text">
+    </p-button>
+  </ng-template>
+</p-dialog>

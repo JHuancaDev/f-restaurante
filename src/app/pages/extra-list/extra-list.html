@@ -1,0 +1,361 @@
+<!-- src/app/components/extra-list/extra-list.html -->
+<div class="extra-list-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Toolbar -->
+  <p-toolbar styleClass="mb-4">
+    <ng-template pTemplate="start">
+      <h2 class="m-0">
+        <i class="pi pi-plus-circle mr-2"></i>
+        Gestión de Extras
+      </h2>
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <p-button 
+        icon="pi pi-plus" 
+        label="Nuevo Extra" 
+        (onClick)="openNewDialog()" 
+        styleClass="p-button-success">
+      </p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Filtros -->
+  <div class="filters-card mb-4">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Categoría</label>
+        <p-dropdown 
+          [(ngModel)]="selectedCategoryFilter" 
+          (options)="categoryOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Todas las categorías"
+          (showClear)="true"
+          styleClass="w-full">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-item">
+        <label>Disponibles</label>
+        <p-toggleswitch  
+          [(ngModel)]="availableOnlyFilter">
+        </p-toggleswitch>
+      </div>
+
+      <div class="filter-item">
+        <label>Solo Gratuitos</label>
+        <p-toggleswitch  
+          [(ngModel)]="freeOnlyFilter">
+        </p-toggleswitch>
+      </div>
+
+      <div class="filter-actions">
+        <p-button 
+          icon="pi pi-filter" 
+          label="Aplicar" 
+          (onClick)="applyFilters()" 
+          styleClass="p-button-primary">
+        </p-button>
+
+        <p-button 
+          icon="pi pi-filter-slash" 
+          label="Limpiar" 
+          (onClick)="clearFilters()"
+          styleClass="p-button-secondary ml-2">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Extras -->
+  <p-table 
+    [value]="extras" 
+    [loading]="loading" 
+    [paginator]="true" 
+    [rows]="rows" 
+    [first]="first"
+    [showCurrentPageReport]="true" 
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} extras"
+    [rowsPerPageOptions]="[10, 25, 50]" 
+    responsiveLayout="scroll" 
+    styleClass="p-datatable-gridlines">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 60px">ID</th>
+        <th style="width: 100px">Imagen</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th style="width: 120px">Categoría</th>
+        <th style="width: 120px">Precio</th>
+        <th style="width: 100px">Stock</th>
+        <th style="width: 120px">Disponible</th>
+        <th style="width: 120px">Gratuito</th>
+        <th style="width: 200px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-extra>
+      <tr>
+        <td>{{ extra.id }}</td>
+
+        <td>
+          <p-image 
+            [src]="extra.image_url || 'assets/images/no-image.png'" 
+            alt="{{extra.name}}" 
+            width="70" 
+            height="70" 
+            [preview]="extra.image_url ? true : false"
+            [imageStyle]="{'object-fit': 'cover', 'border-radius': '8px'}">
+          </p-image>
+        </td>
+
+        <td>
+          <strong>{{ extra.name }}</strong>
+        </td>
+
+        <td>
+          <div class="description-cell">
+            {{ extra.description || 'Sin descripción' }}
+          </div>
+        </td>
+
+        <td>
+          <p-tag [value]="getCategoryLabel(extra.category)" (severity)="getCategorySeverity(extra.category)">
+          </p-tag>
+        </td>
+
+        <td class="text-right">
+          <span *ngIf="!extra.is_free" class="price-badge">
+            S/ {{ extra.price | number:'1.2-2' }}
+          </span>
+          <span *ngIf="extra.is_free" class="free-badge">
+            GRATIS
+          </span>
+        </td>
+
+        <td class="text-center">
+          <p-tag 
+            [value]="extra.stock.toString()" 
+            (severity)="getStockSeverity(extra.stock)">
+          </p-tag>
+        </td>
+
+        <td class="text-center">
+          <p-toggleswitch
+            [(ngModel)]="extra.is_available" 
+            (onChange)="toggleAvailability(extra)">
+          </p-toggleswitch>
+        </td>
+
+        <td class="text-center">
+          <p-tag 
+            [value]="extra.is_free ? 'Sí' : 'No'" 
+            [severity]="extra.is_free ? 'success' : 'info'">
+          </p-tag>
+        </td>
+
+        <td>
+          <div class="action-buttons">
+            <p-button 
+              icon="pi pi-pencil" 
+              styleClass="p-button-rounded p-button-warning p-button-sm"
+              (onClick)="openEditDialog(extra)" 
+              pTooltip="Editar" 
+              tooltipPosition="top">
+            </p-button>
+
+            <p-button 
+              icon="pi pi-trash" 
+              styleClass="p-button-rounded p-button-danger p-button-sm"
+              (onClick)="deleteExtra(extra)" 
+              pTooltip="Eliminar" 
+              tooltipPosition="top">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="10" class="text-center">
+          <div class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <p>No se encontraron extras</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Dialog para Crear/Editar Extra -->
+  <p-dialog 
+    [(visible)]="displayDialog" 
+    [header]="dialogTitle" 
+    [modal]="true" 
+    [style]="{width: '700px'}"
+    [draggable]="false" 
+    [resizable]="false">
+
+    <div class="dialog-content">
+      <div class="form-grid">
+        <!-- Nombre -->
+        <div class="field col-12">
+          <label for="name" class="required">Nombre del Extra</label>
+          <input 
+            pInputText 
+            id="name" 
+            [(ngModel)]="extraForm.name" 
+            placeholder="Ej: Salsa BBQ Extra, Queso Extra"
+            class="w-full">
+        </div>
+
+        <!-- Descripción -->
+        <div class="field col-12">
+          <label for="description">Descripción</label>
+          <textarea 
+            pInputTextarea 
+            id="description" 
+            [(ngModel)]="extraForm.description"
+            placeholder="Describe el extra (opcional)..." 
+            rows="2" 
+            class="w-full">
+          </textarea>
+        </div>
+
+        <!-- Precio y Stock -->
+        <div class="field col-6">
+          <label for="price">Precio (S/)</label>
+          <p-inputNumber 
+            [(ngModel)]="extraForm.price" 
+            mode="currency" 
+            currency="PEN" 
+            locale="es-PE" 
+            [min]="0"
+            [minFractionDigits]="2" 
+            inputId="price" 
+            styleClass="w-full"
+            [disabled]="extraForm.is_free">
+          </p-inputNumber>
+        </div>
+
+        <div class="field col-6">
+          <label for="stock">Stock</label>
+          <p-inputNumber 
+            [(ngModel)]="extraForm.stock" 
+            [min]="0" 
+            [showButtons]="true" 
+            inputId="stock"
+            styleClass="w-full">
+          </p-inputNumber>
+        </div>
+
+        <!-- Categoría -->
+        <div class="field col-12">
+          <label for="category" class="required">Categoría</label>
+          <p-dropdown 
+            [(ngModel)]="extraForm.category" 
+            (options)="categoryOptions" 
+            optionLabel="label" 
+            optionValue="value"
+            placeholder="Seleccione una categoría" 
+            inputId="category" 
+            styleClass="w-full">
+          </p-dropdown>
+        </div>
+
+        <!-- Opciones -->
+        <div class="field col-6">
+          <label>Disponible</label>
+          <p-toggleswitch  
+            [(ngModel)]="extraForm.is_available">
+          </p-toggleswitch>
+        </div>
+
+        <div class="field col-6">
+          <label>Gratuito</label>
+          <p-toggleswitch  
+            [(ngModel)]="extraForm.is_free"
+            (onChange)="onFreeToggleChange($event)">
+          </p-toggleswitch>
+        </div>
+
+        <!-- Imagen -->
+        <div class="field col-12">
+          <label>Imagen del Extra</label>
+          
+          <div class="upload-section mb-3">
+            <input 
+              type="file" 
+              id="imageInput"
+              #fileInput
+              (change)="onImageSelected($event)"
+              accept="image/*"
+              style="display: none">
+            
+            <p-button 
+              label="Seleccionar Imagen" 
+              icon="pi pi-upload" 
+              (onClick)="fileInput.click()"
+              styleClass="p-button-outlined p-button-secondary">
+            </p-button>
+            
+            <small class="text-muted ml-3">
+              Máximo {{imageSizeLimitMB}}MB. Formatos: JPG, PNG, GIF, WebP
+            </small>
+          </div>
+          
+          <!-- Preview de imagen -->
+          <div *ngIf="imagePreview || extraForm.image_url" class="image-preview-container">
+            <div class="image-preview">
+              <img 
+                [src]="imagePreview || extraForm.image_url" 
+                alt="Preview" 
+                class="preview-img"
+                onerror="this.src='assets/images/no-image.png'">
+              <button 
+                pButton 
+                type="button" 
+                icon="pi pi-times" 
+                class="p-button-danger p-button-rounded remove-btn"
+                (click)="removeImage()">
+              </button>
+            </div>
+          </div>
+          
+          <!-- URL Input -->
+          <div class="field col-12 mt-3" *ngIf="!imagePreview">
+            <label for="image_url">URL de Imagen (Alternativa)</label>
+            <input 
+              pInputText 
+              id="image_url" 
+              [(ngModel)]="extraForm.image_url"
+              placeholder="https://ejemplo.com/imagen.jpg" 
+              class="w-full">
+            <small class="text-muted">Si no subes un archivo, puedes usar una URL de imagen existente</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button 
+        label="Cancelar" 
+        icon="pi pi-times" 
+        (onClick)="hideDialog()" 
+        styleClass="p-button-text">
+      </p-button>
+
+      <p-button 
+        [label]="isEditMode ? 'Actualizar' : 'Crear'" 
+        icon="pi pi-check" 
+        (onClick)="saveExtra()"
+        [loading]="loading">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -13,6 +13,10 @@ import { TableDetail } from './pages/table-detail/table-detail';
 import { SaleList } from './pages/sale-list/sale-list';
 import { SaleForm } from './pages/sale-form/sale-form';
 import { UserList } from './pages/user-list/user-list';
+import { Order } from './pages/order/order';
+import { Reviews } from './pages/reviews/reviews';
+import { OrderDetail } from './pages/order-detail/order-detail';
+import { ExtraList } from './pages/extra-list/extra-list';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -26,7 +30,6 @@ export const routes: Routes = [
         component: Layout,
         canActivate: [AuthGuard],
         children: [
-            { path: 'table/table-active', component: TablesActive },
             { path: 'category', component: Category },
             { path: 'tables-list', component: TableList },
             { path: 'tables/new', component: TableForm },
@@ -36,8 +39,11 @@ export const routes: Routes = [
             { path: 'tables/detail/:id', component: TableDetail },
             { path: 'sales', component: SaleList },
             { path: 'sales/new', component: SaleForm },
-             { path: 'users', component: UserList },
-
+            { path: 'users', component: UserList },
+            { path: 'order', component: Order },
+            { path: 'reviews',component: Reviews},
+            { path: 'orders/:id', component: OrderDetail },
+            { path: 'extras', component: ExtraList },
         ]
     },
     { path: '**', redirectTo: 'login' }

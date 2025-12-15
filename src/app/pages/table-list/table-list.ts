@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableService } from '../../service/table-service';
 import { Table } from '../../models/table';
@@ -14,6 +14,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 
 @Component({
   selector: 'app-table-list',
+  standalone: true,
   imports: [
     TagModule,
     ButtonModule,
@@ -26,20 +27,22 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
     ConfirmPopupModule
   ],
   templateUrl: './table-list.html',
-  styleUrl: './table-list.scss'
+  styleUrls: ['./table-list.scss']
 })
-export class TableList {
-tables: Table[] = [];
+export class TableList implements OnInit {
+  tables: Table[] = [];
   loading: boolean = false;
   showAvailableOnly: boolean = false;
 
   constructor(
     private tableService: TableService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
+
     this.loadTables();
   }
 
@@ -49,18 +52,16 @@ tables: Table[] = [];
       next: (tables) => {
         this.tables = tables;
         this.loading = false;
+        this.cdr.detectChanges(); // fuerza que Angular refresque la vista
       },
       error: (error) => {
         console.error('Error loading tables:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Error al cargar las mesas'
-        });
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
+
 
   onAvailableOnlyChange(): void {
     this.loadTables();

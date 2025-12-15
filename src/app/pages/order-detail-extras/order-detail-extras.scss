@@ -1,0 +1,49 @@
+.order-extras-container {
+  .extra-image {
+    img {
+      object-fit: cover;
+      border: 1px solid var(--surface-d);
+      height: 5rem;
+    }
+  }
+
+  .extra-image-preview {
+    img {
+      object-fit: cover;
+      border: 2px solid var(--surface-border);
+      
+    }
+  }
+
+  .quantity-badge {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .empty-extras {
+    border: 2px dashed var(--surface-border);
+    border-radius: var(--border-radius);
+    background: var(--surface-ground);
+    
+    i {
+      opacity: 0.5;
+    }
+  }
+
+  .new-extra-highlight {
+    animation: highlight 2s ease-in-out;
+  }
+  
+  @keyframes highlight {
+    0% { background-color: rgba(var(--green-500), 0.2); }
+    50% { background-color: rgba(var(--green-500), 0.5); }
+    100% { background-color: transparent; }
+  }
+}

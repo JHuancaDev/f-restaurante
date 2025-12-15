@@ -22,7 +22,7 @@ import { CheckboxModule } from 'primeng/checkbox';
   templateUrl: './table-form.html',
   styleUrl: './table-form.scss'
 })
-export class TableForm {
+export class TableForm{
   tableForm: FormGroup;
   isEditMode: boolean = false;
   tableId?: number;
@@ -53,8 +53,8 @@ export class TableForm {
     return this.fb.group({
       number: [null, [Validators.required, Validators.min(1)]],
       capacity: [null, [Validators.required, Validators.min(1)]],
-      position_x: [null, [Validators.required, Validators.min(0)]],
-      position_y: [null, [Validators.required, Validators.min(0)]],
+      position_x: [100, [Validators.required, Validators.min(0)]],
+      position_y: [100, [Validators.required, Validators.min(0)]],
       is_available: [true],
       is_active: [true]
     });
@@ -98,7 +98,7 @@ export class TableForm {
             summary: 'Éxito',
             detail: 'Mesa actualizada correctamente'
           });
-          this.router.navigate(['/tables']);
+          this.router.navigate(['/tables-list']);
         },
         error: (error) => {
           console.error('Error updating table:', error);
@@ -118,7 +118,7 @@ export class TableForm {
             summary: 'Éxito',
             detail: 'Mesa creada correctamente'
           });
-          this.router.navigate(['/tables']);
+          this.router.navigate(['/tables-list']);
         },
         error: (error) => {
           console.error('Error creating table:', error);
@@ -140,6 +140,6 @@ export class TableForm {
   }
 
   onCancel(): void {
-    this.router.navigate(['/tables']);
+    this.router.navigate(['/tables-list']);
   }
 }

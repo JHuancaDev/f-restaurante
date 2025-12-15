@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { User } from '../../models/user.model';
 import { UserService } from '../../service/user-service';
 import { MessageService } from 'primeng/api';
@@ -49,7 +49,8 @@ export class UserList {
 
   constructor(
     private userService: UserService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -63,6 +64,7 @@ export class UserList {
         this.users = users;
         this.totalRecords = users.length;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading users:', error);
@@ -72,6 +74,7 @@ export class UserList {
           detail: 'Error al cargar los usuarios'
         });
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
