@@ -1,34 +1,517 @@
-.order-row {
-  transition: all 0.3s ease;
+/* src/app/pages/order/order.component.scss */
+.order-page {
+  padding: 1.5rem;
   
-  &.new-order-highlight {
-    background-color: #e8f5e8 !important;
-    border-left: 4px solid #22c55e;
-    animation: pulse-highlight 2s ease-in-out;
+  :host ::ng-deep {
+    .p-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: white;
+      
+      .p-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px 10px 0 0;
+        
+        h2 {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 600;
+        }
+      }
+      
+      .p-card-body {
+        padding: 0;
+      }
+    }
   }
 }
 
-@keyframes pulse-highlight {
-  0% { background-color: #e8f5e8; }
-  50% { background-color: #dcfce7; }
-  100% { background-color: #e8f5e8; }
+// Header section
+.order-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .header-title {
+      h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+      }
+      
+      .header-subtitle {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+    }
+    
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      
+      :host ::ng-deep {
+        .p-badge {
+          background: #3b82f6;
+          color: white;
+          min-width: 36px;
+          height: 36px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .p-tag {
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          
+          &.p-tag-success {
+            background: #10b981;
+            color: white;
+          }
+          
+          &.p-tag-danger {
+            background: #ef4444;
+            color: white;
+          }
+          
+          .pi-circle-fill {
+            font-size: 0.5rem;
+            margin-right: 0.375rem;
+          }
+        }
+      }
+    }
+  }
 }
 
-.delivery-address {
-  max-width: 200px;
-  word-break: break-word;
+// Tabla de órdenes
+:host ::ng-deep {
+  .p-datatable {
+    border: none;
+    
+    .p-datatable-thead > tr > th {
+      background: #f9fafb;
+      color: #374151;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid #e5e7eb;
+      padding: 1rem;
+      border-top: none;
+    }
+    
+    .p-datatable-tbody > tr {
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f3f4f6;
+      
+      &:hover {
+        background: #f9fafb;
+      }
+      
+      &.updated-order {
+        background: linear-gradient(90deg, #f0f9ff 0%, transparent 100%);
+        animation: subtle-pulse 2s ease-in-out;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 4px;
+          bottom: 4px;
+          width: 3px;
+          background: #3b82f6;
+          border-radius: 0 2px 2px 0;
+        }
+      }
+      
+      &.has-extras {
+        .order-id-container {
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            width: 6px;
+            height: 6px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            animation: extras-pulse 2s infinite;
+          }
+        }
+      }
+      
+      > td {
+        padding: 1rem;
+        vertical-align: middle;
+      }
+    }
+  }
 }
 
-// Mejorar visualización de tags
+// Contenido de las celdas
+.order-id-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  strong {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+  
+  .extras-badge {
+    background: #8b5cf6;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    position: relative;
+    
+    .extras-count {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.5rem;
+      padding: 1px 3px;
+      border-radius: 50%;
+      min-width: 14px;
+      text-align: center;
+    }
+  }
+  
+  .update-badge {
+    color: #3b82f6;
+    animation: bell-shake 2s ease-in-out;
+  }
+}
+
+// Badges de tipo de orden
 :host ::ng-deep {
   .p-tag {
-    min-width: 120px;
+    min-width: 85px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
     text-align: center;
-    text-transform: capitalize;
-    transition: all 0.3s ease;
+    border: 1px solid transparent;
     
-    &:hover {
-      transform: scale(1.05);
+    // Tipo: Dine In
+    &[value="Comer en local"] {
+      background: #dbeafe;
+      color: #1e40af;
+      border-color: #93c5fd;
+    }
+    
+    // Tipo: Delivery
+    &[value="Delivery"] {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fcd34d;
+    }
+    
+    // Estados
+    &[severity="success"] {
+      background: #d1fae5;
+      color: #065f46;
+      border-color: #6ee7b7;
+      cursor: pointer;
+      
+      &:hover {
+        background: #a7f3d0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(6, 95, 70, 0.1);
+      }
+    }
+    
+    &[severity="info"] {
+      background: #dbeafe;
+      color: #1e40af;
+      border-color: #93c5fd;
+    }
+    
+    &[severity="warning"] {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fcd34d;
+    }
+    
+    &[severity="danger"] {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+  }
+}
+
+// Dirección de delivery
+.delivery-address {
+  max-width: 180px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  color: #4b5563;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  
+  .pi-truck {
+    color: #8b5cf6;
+    font-size: 0.875rem;
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+  }
+}
+
+// Info de items
+.items-info {
+  .items-count {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+  }
+  
+  .items-preview {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-top: 0.125rem;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .extras-info {
+    margin-top: 0.25rem;
+    
+    small {
+      color: #8b5cf6;
+      font-weight: 500;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+  }
+}
+
+// Total amount
+.total-amount {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  
+  strong {
+    color: #059669;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  
+  .total-increase {
+    color: #10b981;
+    font-size: 0.75rem;
+    animation: float-up 2s ease-in-out;
+  }
+}
+
+// Acciones
+.action-buttons {
+  :host ::ng-deep {
+    .p-button {
+      width: 32px;
+      height: 32px;
+      
+      &.p-button-info {
+        background: #0ea5e9;
+        border-color: #0ea5e9;
+        
+        &:hover {
+          background: #0284c7;
+          border-color: #0284c7;
+        }
+      }
+    }
+  }
+}
+
+// Estado vacío
+:host ::ng-deep {
+  .p-datatable-emptymessage {
+    padding: 3rem 1rem;
+    text-align: center;
+    
+    .pi-inbox {
+      font-size: 2.5rem;
+      color: #9ca3af;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      color: #6b7280;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+}
+
+// Paginador minimalista
+:host ::ng-deep {
+  .p-paginator {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 0.75rem 1rem;
+    
+    .p-paginator-pages .p-paginator-page {
+      min-width: 32px;
+      height: 32px;
+      font-size: 0.875rem;
+      
+      &.p-highlight {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+      }
+      
+      &:not(.p-highlight):hover {
+        background: #e5e7eb;
+        border-color: #e5e7eb;
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes subtle-pulse {
+  0% { background: linear-gradient(90deg, #f0f9ff 0%, transparent 100%); }
+  50% { background: linear-gradient(90deg, #dbeafe 0%, transparent 100%); }
+  100% { background: linear-gradient(90deg, #f0f9ff 0%, transparent 100%); }
+}
+
+@keyframes extras-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes bell-shake {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(10deg); }
+  20%, 40%, 60%, 80% { transform: rotate(-10deg); }
+}
+
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(-4px); opacity: 0.8; }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .order-header .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    
+    .header-stats {
+      align-self: flex-end;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .order-page {
+    padding: 1rem;
+  }
+  
+  :host ::ng-deep {
+    .p-datatable {
+      .p-datatable-thead {
+        display: none;
+      }
+      
+      .p-datatable-tbody > tr {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        background: white;
+        
+        &.updated-order::before {
+          display: none;
+        }
+        
+        > td {
+          display: flex;
+          justify-content: space-between;
+          padding: 0.5rem 0;
+          border: none;
+          border-bottom: 1px solid #f3f4f6;
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          &::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            min-width: 120px;
+          }
+        }
+      }
+    }
+  }
+  
+  // Añadir data-label a las celdas en HTML
+  // Necesitarías modificar el HTML para esto
+}
+
+// Tooltips minimalistas
+:host ::ng-deep {
+  .p-tooltip {
+    .p-tooltip-text {
+      background: #374151;
+      color: white;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #374151;
+    }
+    
+    &.p-tooltip-bottom .p-tooltip-arrow {
+      border-bottom-color: #374151;
     }
   }
 }

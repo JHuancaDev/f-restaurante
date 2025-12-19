@@ -22,6 +22,10 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
+export interface CategoryDropdown {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-product-list',
@@ -50,7 +54,8 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 })
 export class ProductList implements OnInit {
   products: ProductM[] = [];
-  categories: CategoryOption[] = [];
+  categories: CategoryDropdown[] = [];
+  filteredCategories: CategoryDropdown[] = [];
   loading = false;
   imageUploading = false;
 
@@ -67,11 +72,11 @@ export class ProductList implements OnInit {
   acceptedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
   // Form
-  productForm: ProductCreate = {
+  productForm: any = {
     name: '',
     description: '',
     price: 0,
-    category_id: 0,
+    category: null,
     stock: 0,
     image_url: ''
   };
@@ -122,7 +127,7 @@ export class ProductList implements OnInit {
 
   performSearch(): void {
     this.loading = true;
-    
+
     const searchParams = {
       q: this.searchTerm.trim(),
       category_id: this.selectedCategoryFilter,
@@ -162,12 +167,24 @@ export class ProductList implements OnInit {
     this.categoryService.getCategories().subscribe({
       next: (data) => {
         this.categories = data.map(cat => ({
-          label: cat.name,
-          value: cat.id!
+          id: cat.id!,
+          name: cat.name
         }));
+        this.filteredCategories = [...this.categories];
         this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
       }
     });
+  }
+
+
+  filterCategories(event: any): void {
+    const query = event.query.toLowerCase();
+    this.filteredCategories = this.categories.filter(category =>
+      category.name.toLowerCase().includes(query)
+    );
   }
 
   loadProducts(): void {
@@ -202,7 +219,7 @@ export class ProductList implements OnInit {
   onPageChange(event: any): void {
     this.first = event.first;
     this.rows = event.rows;
-    
+
     if (this.isSearching && this.searchTerm.trim().length >= 2) {
       this.performSearch();
       this.cdr.detectChanges();
@@ -239,7 +256,7 @@ export class ProductList implements OnInit {
       name: '',
       description: '',
       price: 0,
-      category_id: this.categories[0]?.value || 0,
+      category: null,
       stock: 0,
       image_url: ''
     };
@@ -252,11 +269,14 @@ export class ProductList implements OnInit {
     this.isEditMode = true;
     this.dialogTitle = 'Editar Producto';
     this.selectedProductId = product.id;
+
+    const category = this.categories.find(c => c.id === product.category_id);
+
     this.productForm = {
       name: product.name,
       description: product.description,
       price: product.price,
-      category_id: product.category_id,
+      category: category || null,
       stock: product.stock,
       image_url: product.image_url || ''
     };
@@ -268,9 +288,9 @@ export class ProductList implements OnInit {
 
   onImageSelected(event: any): void {
     const file = event.target.files[0];
-    
+
     if (!file) return;
-    
+
     // Validar tipo de archivo
     if (!this.acceptedImageTypes.includes(file.type)) {
       this.messageService.add({
@@ -282,7 +302,7 @@ export class ProductList implements OnInit {
       this.cdr.detectChanges();
       return;
     }
-    
+
     // Validar tamaño
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > this.imageSizeLimitMB) {
@@ -294,9 +314,9 @@ export class ProductList implements OnInit {
       this.clearFileInput();
       return;
     }
-    
+
     this.selectedImageFile = file;
-    
+
     // Crear preview
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -304,7 +324,7 @@ export class ProductList implements OnInit {
       this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
-    
+
     // Limpiar la URL si se subió un archivo
     this.productForm.image_url = '';
   }
@@ -329,6 +349,16 @@ export class ProductList implements OnInit {
       return;
     }
 
+    // Crea los datos del producto
+    const productData: ProductCreate = {
+      name: this.productForm.name,
+      description: this.productForm.description,
+      price: this.productForm.price,
+      category_id: this.productForm.category?.id || 0,
+      stock: this.productForm.stock,
+      image_url: this.productForm.image_url || undefined
+    };
+
     this.loading = true;
 
     if (this.isEditMode && this.selectedProductId) {
@@ -338,14 +368,15 @@ export class ProductList implements OnInit {
         description: this.productForm.description,
         price: this.productForm.price,
         category_id: this.productForm.category_id,
-        stock: this.productForm.stock
+        stock: this.productForm.stock,
+        image_url: productData.image_url
       };
 
       if (this.selectedImageFile) {
         // Si hay nueva imagen, subirla
         this.productService.updateProductWithImage(
-          this.selectedProductId, 
-          updateData, 
+          this.selectedProductId,
+          updateData,
           this.selectedImageFile
         ).subscribe({
           next: () => {
@@ -552,7 +583,7 @@ export class ProductList implements OnInit {
       return false;
     }
 
-    if (!this.productForm.category_id) {
+    if (!this.productForm.category) { // Cambia esta validación
       this.messageService.add({
         severity: 'warn',
         summary: 'Validación',
@@ -572,9 +603,9 @@ export class ProductList implements OnInit {
 
     return true;
   }
-
+  
   getCategoryName(categoryId: number): string {
-    return this.categories.find(c => c.value === categoryId)?.label || 'Sin categoría';
+    return this.categories.find(c => c.id === categoryId)?.name || 'Sin categoría';
   }
 
   getStockSeverity(stock: number): 'danger' | 'warning' | 'success' | undefined {

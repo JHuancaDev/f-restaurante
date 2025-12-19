@@ -51,7 +51,7 @@ export interface ProductFormData {
   name: string;
   description: string;
   price: number;
-  category_id: number;
+  category: { id: number; name: string } | null; // Cambia aquí
   stock: number;
   image_url?: string;
   image_file?: File;

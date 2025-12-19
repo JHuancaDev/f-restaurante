@@ -157,12 +157,32 @@
         </div>
 
         <!-- Category -->
-        <div class="field col-12">
-          <label for="category" class="required">Categoría</label>
-          <p-autocomplete [(ngModel)]="productForm.category_id" (options)="categories" optionLabel="label"
-            optionValue="value" placeholder="Seleccione una categoría" inputId="category" styleClass="w-full">
-          </p-autocomplete>
-        </div>
+        <!-- En el formulario del diálogo, cambia la sección de categoría -->
+<div class="field col-12">
+  <label for="category" class="required">Categoría</label>
+  <p-autocomplete 
+    [(ngModel)]="productForm.category"
+    [suggestions]="filteredCategories"
+    (completeMethod)="filterCategories($event)"
+    [dropdown]="true"
+    placeholder="Buscar y seleccionar categoría..."
+    field="name"
+    [forceSelection]="true"
+    [minLength]="1"
+    inputId="category"
+    styleClass="w-full">
+    
+    <ng-template let-category pTemplate="item">
+      <div class="category-item">
+        <span>{{ category.name }}</span>
+      </div>
+    </ng-template>
+    
+  </p-autocomplete>
+  <small *ngIf="productForm.category" class="text-muted">
+    Categoría seleccionada: {{ productForm.category.name }}
+  </small>
+</div>
 
         <!-- Upload Image Section -->
         <div class="field col-12">

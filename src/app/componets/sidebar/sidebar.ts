@@ -108,7 +108,7 @@ export class Sidebar {
           {
             label: 'Cerrar Sesión',
             icon: 'pi pi-sign-out',
-            styleClass: 'logout-item', // Clase CSS personalizada
+            styleClass: 'logout-item',
             command: () => {
               this.logout();
             }
